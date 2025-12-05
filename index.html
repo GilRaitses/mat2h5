@@ -416,70 +416,77 @@
 
         updateLoading(70);
 
-        // Smoke/dust particle system for data flow
-        const particleCount = 300;
-        const particles = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
-        const velocities = new Float32Array(particleCount * 3);
-        const states = new Float32Array(particleCount); // 0=matlab, 1=converting, 2=h5
-        const lifetimes = new Float32Array(particleCount);
-        const maxLifetime = 5.0;
+        // Larva particle system for data flow
+        const larvaParticleCount = 50;
+        const larvaParticles = [];
+        const larvaVelocities = [];
+        const larvaStates = [];
+        const larvaLifetimes = [];
+        const maxLifetime = 8.0;
 
         const matlabColor = new THREE.Color(matlabColors[0]);
         const h5Color = new THREE.Color(h5Colors[0]);
         const conversionColor = new THREE.Color(conversionColors[0]);
 
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
+        function createLarvaParticle(color) {
+            const larvaGroup = new THREE.Group();
             
-            // Start particles at MATLAB structures
-            const source = matlabStructures[Math.floor(Math.random() * matlabStructures.length)];
-            positions[i3] = source.mesh.position.x + source.group.position.x;
-            positions[i3 + 1] = source.mesh.position.y + source.group.position.y;
-            positions[i3 + 2] = source.mesh.position.z + source.group.position.z;
+            // Main body (elongated sphere)
+            const bodyGeo = new THREE.SphereGeometry(0.08, 8, 8);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.5,
+                metalness: 0.2,
+                roughness: 0.4,
+                transparent: true,
+                opacity: 0.9
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.scale.set(1, 2, 1); // Elongate vertically
+            larvaGroup.add(body);
             
-            // Random velocity toward H5 side with turbulence
-            velocities[i3] = (Math.random() * 0.08 + 0.03);
-            velocities[i3 + 1] = (Math.random() - 0.5) * 0.08;
-            velocities[i3 + 2] = (Math.random() - 0.5) * 0.08;
+            // Head (slightly larger)
+            const headGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const head = new THREE.Mesh(headGeo, bodyMat);
+            head.position.y = 0.15;
+            larvaGroup.add(head);
             
-            // Start in MATLAB state
-            states[i] = 0;
-            sizes[i] = Math.random() * 0.3 + 0.1; // Larger, more visible particles
-            lifetimes[i] = Math.random() * maxLifetime;
-            
-            // MATLAB color (smoke/dust)
-            colors[i3] = matlabColor.r;
-            colors[i3 + 1] = matlabColor.g;
-            colors[i3 + 2] = matlabColor.b;
+            return larvaGroup;
         }
 
-        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        particles.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-        // Smoke/dust material - more diffuse and wispy
-        const particleMaterial = new THREE.PointsMaterial({
-            size: 0.4,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.6,
-            blending: THREE.AdditiveBlending,
-            sizeAttenuation: true,
-            depthWrite: false
-        });
-
-        const particleSystem = new THREE.Points(particles, particleMaterial);
-        scene.add(particleSystem);
+        for (let i = 0; i < larvaParticleCount; i++) {
+            // Start particles at MATLAB structures
+            const source = matlabStructures[Math.floor(Math.random() * matlabStructures.length)];
+            const larva = createLarvaParticle(matlabColor);
+            
+            larva.position.set(
+                source.mesh.position.x + source.group.position.x,
+                source.mesh.position.y + source.group.position.y,
+                source.mesh.position.z + source.group.position.z
+            );
+            
+            larvaVelocities.push(new THREE.Vector3(
+                Math.random() * 0.08 + 0.03,
+                (Math.random() - 0.5) * 0.05,
+                (Math.random() - 0.5) * 0.05
+            ));
+            
+            larvaStates.push(0);
+            larvaLifetimes.push(Math.random() * maxLifetime);
+            
+            scene.add(larva);
+            larvaParticles.push(larva);
+        }
 
         updateLoading(80);
 
         // Post-processing - ensure transparency
         const composer = new EffectComposer(renderer);
         const renderPass = new RenderPass(scene, camera);
-        renderPass.clear = false; // Don't clear, let background show through
+        renderPass.clear = true;
+        renderPass.clearColor = 0x7fff00; // Chartreuse
+        renderPass.clearAlpha = 0; // Transparent
         composer.addPass(renderPass);
 
         const bloomPass = new UnrealBloomPass(
@@ -692,97 +699,108 @@
                 }
             });
 
-            // Update particles (data flow)
-            const positions = particles.attributes.position.array;
-            const colors = particles.attributes.color.array;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const i3 = i * 3;
-                const particlePos = new THREE.Vector3(positions[i3], positions[i3 + 1], positions[i3 + 2]);
+            // Update larva particles (data flow)
+            for (let i = 0; i < larvaParticles.length; i++) {
+                const larva = larvaParticles[i];
+                const velocity = larvaVelocities[i];
+                const particlePos = larva.position.clone();
                 
-                // Apply wind to particles
+                // Apply wind to larvae
                 const distance = particlePos.distanceTo(mouseWorldPos);
                 if (distance < windRadius && distance > 0.1) {
-                    const force = (1 - distance / windRadius) * windStrength * 0.5 * delta;
+                    const force = (1 - distance / windRadius) * windStrength * 0.3 * delta;
                     const direction = new THREE.Vector3()
                         .subVectors(particlePos, mouseWorldPos)
                         .normalize();
-                    velocities[i3] += direction.x * force * 10;
-                    velocities[i3 + 1] += direction.y * force * 10;
-                    velocities[i3 + 2] += direction.z * force * 10;
+                    velocity.add(direction.multiplyScalar(force * 5));
                 }
                 
                 // Update lifetime
-                lifetimes[i] += delta;
+                larvaLifetimes[i] += delta;
                 
-                // Add turbulence for smoke effect
-                velocities[i3 + 1] += (Math.random() - 0.5) * 0.01 * delta;
-                velocities[i3 + 2] += (Math.random() - 0.5) * 0.01 * delta;
+                // Add slight turbulence
+                velocity.y += (Math.random() - 0.5) * 0.005 * delta;
+                velocity.z += (Math.random() - 0.5) * 0.005 * delta;
                 
                 // Update position
-                positions[i3] += velocities[i3];
-                positions[i3 + 1] += velocities[i3 + 1];
-                positions[i3 + 2] += velocities[i3 + 2];
+                larva.position.add(velocity.clone().multiplyScalar(delta * 10));
                 
-                // Fade out based on lifetime (smoke dissipates)
-                const age = lifetimes[i] / maxLifetime;
-                const opacity = Math.max(0, 1 - age);
+                // Fade out based on lifetime
+                const age = larvaLifetimes[i] / maxLifetime;
+                const opacity = Math.max(0.3, 1 - age * 0.7);
+                
+                // Update material opacity
+                larva.children.forEach(child => {
+                    if (child.material) {
+                        child.material.opacity = opacity;
+                    }
+                });
                 
                 // State transitions based on X position
-                if (positions[i3] < -5 && states[i] === 0) {
+                if (larva.position.x < -5 && larvaStates[i] === 0) {
                     // In MATLAB zone
-                    states[i] = 0;
-                } else if (positions[i3] >= -5 && positions[i3] < 5 && states[i] < 2) {
+                    larvaStates[i] = 0;
+                } else if (larva.position.x >= -5 && larva.position.x < 5 && larvaStates[i] < 2) {
                     // In conversion zone - accelerate and change color
-                    states[i] = 1;
-                    velocities[i3] *= 1.01; // Speed up slightly
+                    larvaStates[i] = 1;
+                    velocity.x *= 1.01;
                     
-                    // Transition color (smoke mixing)
-                    const t = (positions[i3] + 5) / 10;
+                    // Transition color
+                    const t = (larva.position.x + 5) / 10;
                     const color = new THREE.Color().lerpColors(
-                        new THREE.Color(matlabColors[0]),
+                        matlabColor,
                         conversionColor,
                         t
                     );
-                    colors[i3] = color.r * opacity;
-                    colors[i3 + 1] = color.g * opacity;
-                    colors[i3 + 2] = color.b * opacity;
-                } else if (positions[i3] >= 5 && states[i] < 2) {
+                    larva.children.forEach(child => {
+                        if (child.material) {
+                            child.material.color = color;
+                            child.material.emissive = color;
+                        }
+                    });
+                } else if (larva.position.x >= 5 && larvaStates[i] < 2) {
                     // Arrived at H5 zone
-                    states[i] = 2;
-                    const color = new THREE.Color(h5Colors[0]);
-                    colors[i3] = color.r * opacity;
-                    colors[i3 + 1] = color.g * opacity;
-                    colors[i3 + 2] = color.b * opacity;
+                    larvaStates[i] = 2;
+                    larva.children.forEach(child => {
+                        if (child.material) {
+                            child.material.color = h5Color;
+                            child.material.emissive = h5Color;
+                        }
+                    });
                 }
                 
-                // Update size (smoke expands)
-                sizes[i] = (Math.random() * 0.3 + 0.1) * (1 + age * 0.5);
+                // Rotate larva to face direction of movement
+                if (velocity.length() > 0.001) {
+                    larva.lookAt(larva.position.clone().add(velocity));
+                }
                 
-                // Reset particles that have passed through or expired
-                if (positions[i3] > 15 || lifetimes[i] > maxLifetime) {
+                // Reset larvae that have passed through or expired
+                if (larva.position.x > 15 || larvaLifetimes[i] > maxLifetime) {
                     // Respawn at random MATLAB structure
                     const source = matlabStructures[Math.floor(Math.random() * matlabStructures.length)];
-                    positions[i3] = source.mesh.position.x + source.group.position.x;
-                    positions[i3 + 1] = source.mesh.position.y + source.group.position.y;
-                    positions[i3 + 2] = source.mesh.position.z + source.group.position.z;
+                    larva.position.set(
+                        source.mesh.position.x + source.group.position.x,
+                        source.mesh.position.y + source.group.position.y,
+                        source.mesh.position.z + source.group.position.z
+                    );
                     
-                    velocities[i3] = Math.random() * 0.08 + 0.03;
-                    velocities[i3 + 1] = (Math.random() - 0.5) * 0.08;
-                    velocities[i3 + 2] = (Math.random() - 0.5) * 0.08;
-                    states[i] = 0;
-                    lifetimes[i] = 0;
+                    velocity.set(
+                        Math.random() * 0.08 + 0.03,
+                        (Math.random() - 0.5) * 0.05,
+                        (Math.random() - 0.5) * 0.05
+                    );
+                    larvaStates[i] = 0;
+                    larvaLifetimes[i] = 0;
                     
-                    const matColor = new THREE.Color(matlabColors[0]);
-                    colors[i3] = matColor.r;
-                    colors[i3 + 1] = matColor.g;
-                    colors[i3 + 2] = matColor.b;
+                    larva.children.forEach(child => {
+                        if (child.material) {
+                            child.material.color = matlabColor;
+                            child.material.emissive = matlabColor;
+                            child.material.opacity = 0.9;
+                        }
+                    });
                 }
             }
-            
-            particles.attributes.position.needsUpdate = true;
-            particles.attributes.color.needsUpdate = true;
-            particles.attributes.size.needsUpdate = true;
 
             // Animate lights
             matlabLight.intensity = 1.5 + Math.sin(elapsedTime) * 0.3;
@@ -795,9 +813,9 @@
 
             controls.update();
             
-            // Clear with transparent background
-            renderer.setClearColor(0x000000, 0);
-            renderer.clear();
+            // Clear with chartreuse background showing through
+            renderer.setClearColor(0x7fff00, 0); // Chartreuse but fully transparent
+            renderer.clearColor();
             composer.render();
         }
 
