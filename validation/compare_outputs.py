@@ -1,5 +1,5 @@
 """
-compare_real_data.py - Compare MATLAB and Python outputs on real experiment data
+compare_outputs.py - Compare MATLAB and Python validation outputs
 
 This script:
 1. Loads MATLAB validation output (matlab_speedrunvel.csv)
@@ -10,7 +10,7 @@ This script:
 Usage:
     1. Run MATLAB: load_experiment_and_compute.m
     2. Run Python: python load_experiment_and_compute.py
-    3. Run this:   python compare_real_data.py
+    3. Run this:   python compare_outputs.py
 """
 
 import numpy as np
@@ -22,7 +22,7 @@ from scipy.io import loadmat
 
 def main():
     print("=" * 60)
-    print("VALIDATION: Compare MATLAB vs Python on Real Data")
+    print("VALIDATION: Compare MATLAB vs Python Outputs")
     print("=" * 60)
     print()
     
@@ -288,7 +288,7 @@ def generate_report(
     
     if all_passed:
         report += """The Python implementation produces **numerically equivalent** results to the 
-MATLAB reference implementation when processing the same real experimental data.
+MATLAB reference implementation when processing the same experimental data.
 
 The `engineer_data.py` pipeline has been validated for:
 - SpeedRunVel computation (dot product method)

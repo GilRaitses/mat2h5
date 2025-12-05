@@ -1,5 +1,5 @@
 """
-load_experiment_and_compute.py - Load real H5 experiment and compute validation outputs
+load_experiment_and_compute.py - Load H5 experiment and compute validation outputs
 
 ORIGINAL MASON SCRIPTS REFERENCED:
   - Just_ReverseCrawl_Matlab.m (SpeedRunVel computation)
@@ -168,7 +168,7 @@ def detect_reversals(times, speedrunvel, min_duration=3.0):
 
 def main():
     print("=" * 60)
-    print("PYTHON Validation: Load Real H5 Experiment")
+    print("PYTHON Validation: Load H5 Experiment")
     print("=" * 60)
     print()
     

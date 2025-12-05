@@ -1,4 +1,4 @@
-% LOAD_EXPERIMENT_AND_COMPUTE - Load real experiment and compute validation outputs
+% LOAD_EXPERIMENT_AND_COMPUTE - Load experiment and compute validation outputs
 %
 % ORIGINAL MASON SCRIPTS REFERENCED:
 %   - Just_ReverseCrawl_Matlab.m (SpeedRunVel computation)
@@ -28,7 +28,7 @@ if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end
 
-fprintf('=== MATLAB Validation: Load Real Experiment ===\n\n');
+fprintf('=== MATLAB Validation: Load Experiment ===\n\n');
 fprintf('ESET Directory: %s\n', eset_dir);
 fprintf('Experiment: %s\n\n', experiment_name);
 
