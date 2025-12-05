@@ -58,12 +58,6 @@
             justify-content: center;
             align-items: center;
             pointer-events: none;
-            opacity: 0; /* Start hidden, will fade in */
-            transition: opacity 2s ease-in-out;
-        }
-
-        #main-fairy-background.visible {
-            opacity: 1;
         }
 
         #main-fairy-background .fairy-container {
@@ -468,9 +462,6 @@
         }
         if (mainFairyArt) {
             mainFairyArt.textContent = fairyASCII;
-            console.log('Main fairy art populated');
-        } else {
-            console.log('Main fairy art element not found');
         }
         
         let loadingStartTime = Date.now();
@@ -495,10 +486,6 @@
                 if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
                     // Fade to background instead of hiding
                     loadingScreen.classList.add('hidden');
-                    // Show main fairy background
-                    if (mainFairyBackground) {
-                        mainFairyBackground.classList.add('visible');
-                    }
                     // Keep it visible but as background
                     loadingScreen.style.pointerEvents = 'none';
                 }
