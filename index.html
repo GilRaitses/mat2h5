@@ -168,6 +168,21 @@
             to { opacity: 1; }
         }
 
+        .loading-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            z-index: 3;
+            text-shadow: 0 0 4px rgba(127, 255, 0, 0.6);
+            opacity: 0.9;
+            letter-spacing: 2px;
+        }
+
         .loading-progress-text {
             position: absolute;
             bottom: 20px;
@@ -246,6 +261,7 @@
     <div id="loading-screen">
         <div class="fairy-container">
             <div class="fairy-gradient"></div>
+            <div class="loading-title">MAGAT FAIRY</div>
             <div class="fairy-art" id="fairy-art"></div>
             <div class="loading-progress-text" id="loading-progress-text">Loading...</div>
         </div>
