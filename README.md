@@ -68,13 +68,13 @@ The MAGAT (MATLAB Track Analysis) codebase is required for conversion. You have 
 ### Option 1: Automatic Cloning (Recommended)
 
 If git is installed, the tool can clone it automatically:
-- Repository: `https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab.git`
-- Default location: `~/codebase/Matlab-Track-Analysis-SkanataLab`
+- Repository: [https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis)
+- Default location: `~/codebase/MAGATAnalyzer-Matlab-Analysis`
 
 ### Option 2: Manual Setup
 
 If you already have the codebase:
-1. Clone manually: `git clone https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab.git`
+1. Clone manually: `git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git`
 2. Provide the path when prompted by `mat2h5.py`
 
 ## Data Structure
@@ -233,5 +233,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **MAGAT Analyzer**: Samuel Lab (SkanataLab)
-- **MATLAB Track Analysis**: [https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab](https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab)
+- **MAGAT Analyzer**: [Samuel Lab](https://github.com/samuellab) - [MAGATAnalyzer-Matlab-Analysis](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis)

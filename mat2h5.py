@@ -14,8 +14,8 @@ from pathlib import Path
 import os
 
 # MAGAT codebase repository (Samuel Lab)
-MAGAT_REPO_URL = "https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab.git"
-MAGAT_REPO_NAME = "Matlab-Track-Analysis-SkanataLab"
+MAGAT_REPO_URL = "https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git"
+MAGAT_REPO_NAME = "MAGATAnalyzer-Matlab-Analysis"
 
 def check_matlab_engine():
     """Check if MATLAB Engine for Python is available"""

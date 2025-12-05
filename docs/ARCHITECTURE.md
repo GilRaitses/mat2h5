@@ -54,6 +54,6 @@ mat2h5/
 
 - **MATLAB Engine for Python**: Required for MATLAB interface
 - **MAGAT Codebase**: Required for loading experiments (can be cloned automatically)
-  - Repository: [https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab](https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab)
+  - Repository: [https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis)
 - **Python packages**: numpy, h5py, scipy (see requirements.txt)
 
