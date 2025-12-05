@@ -137,18 +137,19 @@
             width: 100%;
             height: 100%;
             background: #7fff00; /* Chartreuse */
-            z-index: 1000;
+            z-index: -1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.5s ease;
+            transition: opacity 2s ease-in-out;
             overflow: hidden;
+            pointer-events: none;
         }
 
         #loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
+            opacity: 0.3;
+            z-index: -1;
         }
 
         .fairy-art {
@@ -274,7 +275,7 @@
         <p class="subtitle">MATLAB to H5 Conversion Tool</p>
         <p class="description">
             Transform your MAGAT experiment data from MATLAB's structured format 
-            into Python-ready H5 files. Watch the data flow through our conversion pipeline.
+            into Python-ready H5 files.
         </p>
         
         <div class="buttons">
@@ -404,7 +405,10 @@
             
             setTimeout(() => {
                 if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                    // Fade to background instead of hiding
                     loadingScreen.classList.add('hidden');
+                    // Keep it visible but as background
+                    loadingScreen.style.pointerEvents = 'none';
                 }
             }, remaining);
         }
