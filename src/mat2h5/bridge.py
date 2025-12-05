@@ -12,6 +12,7 @@ Date: 2025-12-04
 import matlab.engine
 from pathlib import Path
 import os
+import numpy as np
 
 
 class MAGATBridge:
@@ -171,37 +172,50 @@ class MAGATBridge:
     
     def detect_stimuli(self):
         """
-        Detect stimulus onsets from the experiment.
+        Detect stimulus onsets from the experiment using DataManager.detectStimuli().
+        
+        Uses the validated MATLAB method that detects 40 cycles correctly.
         
         Returns:
             dict with 'onset_frames' (list of frame indices) and 'num_stimuli' (int)
         """
         try:
             self.eng.workspace['app'] = self.app
-            # Try to detect stimuli from LED data or global quantities
+            # Use the MATLAB DataManager.detectStimuli() method
+            # This method uses 50% threshold with debouncing (100-frame min interval)
             detect_code = """
-            % Try to detect stimuli from LED1 global quantity
-            if ~isempty(app.eset.expt(1).globalQuantity)
-                led1_idx = [];
-                for i = 1:length(app.eset.expt(1).globalQuantity)
-                    if strcmpi(app.eset.expt(1).globalQuantity(i).fieldname, 'led1Val')
-                        led1_idx = i;
-                        break;
-                    end
-                end
-                if ~isempty(led1_idx)
-                    led1_data = app.eset.expt(1).globalQuantity(led1_idx).yData;
-                    % Simple threshold-based detection
-                    threshold = max(led1_data) * 0.5;
-                    onset_frames = find(diff(led1_data > threshold) == 1) + 1;
+            try
+                stim_times = app.detectStimuli();
+                if isempty(stim_times)
+                    onset_frames = [];
+                    num_stimuli = 0;
+                else
+                    onset_frames = stim_times(:);
                     num_stimuli = length(onset_frames);
+                end
+            catch ME
+                % Fallback: try LED1 global quantity method
+                if ~isempty(app.eset.expt(1).globalQuantity)
+                    led1_idx = [];
+                    for i = 1:length(app.eset.expt(1).globalQuantity)
+                        if strcmpi(app.eset.expt(1).globalQuantity(i).fieldname, 'led1Val')
+                            led1_idx = i;
+                            break;
+                        end
+                    end
+                    if ~isempty(led1_idx)
+                        led1_data = app.eset.expt(1).globalQuantity(led1_idx).yData;
+                        threshold = max(led1_data) * 0.5;
+                        onset_frames = find(diff(led1_data > threshold) == 1) + 1;
+                        num_stimuli = length(onset_frames);
+                    else
+                        onset_frames = [];
+                        num_stimuli = 0;
+                    end
                 else
                     onset_frames = [];
                     num_stimuli = 0;
                 end
-            else
-                onset_frames = [];
-                num_stimuli = 0;
             end
             """
             self.eng.eval(detect_code, nargout=0)
@@ -210,8 +224,14 @@ class MAGATBridge:
             num_stimuli = int(float(self.eng.workspace['num_stimuli']))
             
             # Convert MATLAB array to Python list
-            if onset_frames.size > 0:
+            # Handle case where MATLAB returns tuple or empty array
+            if isinstance(onset_frames, tuple):
+                onset_list = []
+            elif hasattr(onset_frames, 'size') and onset_frames.size > 0:
                 onset_list = [int(x) for x in onset_frames.flatten()]
+            elif hasattr(onset_frames, '__len__') and len(onset_frames) > 0:
+                # Handle list or other sequence types
+                onset_list = [int(x) for x in onset_frames]
             else:
                 onset_list = []
             
