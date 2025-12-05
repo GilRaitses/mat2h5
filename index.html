@@ -160,12 +160,18 @@
             position: relative;
             z-index: 2;
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-            animation: fadeInFairy 1s ease-in;
+            animation: fadeInFairy 1s ease-in, dissolveFairy 3s ease-in 1s forwards;
+            mix-blend-mode: multiply;
         }
 
         @keyframes fadeInFairy {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+
+        @keyframes dissolveFairy {
+            from { opacity: 1; }
+            to { opacity: 0.4; }
         }
 
         .loading-title {
@@ -183,19 +189,6 @@
             letter-spacing: 2px;
         }
 
-        .loading-progress-text {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Avenir Next Ultra Light', 'Avenir Ultra Light', 'Avenir Next', 'Avenir', sans-serif;
-            font-size: 14px;
-            font-weight: 200;
-            color: #000;
-            z-index: 3;
-            text-shadow: 0 0 3px rgba(127, 255, 0, 0.5);
-            opacity: 0.8;
-        }
 
         .fairy-gradient {
             position: absolute;
@@ -221,8 +214,8 @@
             );
             background-size: 200% 200%;
             animation: swirlGradient 10s linear infinite;
-            mix-blend-mode: soft-light;
-            opacity: 0.2;
+            mix-blend-mode: overlay;
+            opacity: 0.15;
             filter: blur(40px);
             z-index: 1;
             pointer-events: none;
@@ -271,7 +264,6 @@
             <div class="fairy-gradient"></div>
             <div class="loading-title">MAGAT FAIRY</div>
             <div class="fairy-art" id="fairy-art"></div>
-            <div class="loading-progress-text" id="loading-progress-text">Loading...</div>
         </div>
     </div>
 
@@ -312,7 +304,6 @@
         // Loading progress
         const loadingScreen = document.getElementById('loading-screen');
         const fairyArt = document.getElementById('fairy-art');
-        const loadingProgressText = document.getElementById('loading-progress-text');
         
         // Load fairy ASCII art
         const fairyASCII = `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -419,11 +410,6 @@
         }
         
         function updateLoading(percent) {
-            // Update progress text
-            if (loadingProgressText) {
-                loadingProgressText.textContent = `Loading... ${Math.round(percent)}%`;
-            }
-            
             // Update gradient rotation based on loading progress
             const gradient = document.querySelector('.fairy-gradient');
             if (gradient) {
