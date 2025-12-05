@@ -38,12 +38,6 @@ This will install:
 - scipy
 - matlabengine (MATLAB Engine for Python)
 
-This will install:
-- numpy
-- h5py
-- scipy
-- matlabengine (MATLAB Engine for Python)
-
 **Note:** If MATLAB Engine installation fails, you may need to install it manually from MATLAB:
 ```bash
 cd matlabroot/extern/engines/python
@@ -71,18 +65,14 @@ See: https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-en
   ```
   (Uses the module directly; works even if executables are blocked.)
 
-### Optional system check before running
-- Minimal wiring check (no installs): `python -m cli.magatfairy --help`
-- Dependency check/install: `python src/install/install.py` (reports Python version, git, MATLAB engine, and installs pip deps)
-- Built-in CLI check: `magatfairy systemfairy` (or `python -m cli.magatfairy systemfairy` on locked-down machines)
-
 ### MAGAT class folders
-- magatfairy ships bundled MAGAT class folders at `src/matlab/core` and uses them by default (no external download).
+- magatfairy ships bundled MAGAT class folders at `matlab/core` and uses them by default (no external download).
 - If you need to override with a different MAGAT codebase, set `MAGAT_CODEBASE` or `magatfairy config set magat_codebase /path/to/codebase`.
 
 ### Optional system check before running
 - Minimal wiring check (no installs): `python -m cli.magatfairy --help`
 - Dependency check/install: `python src/install/install.py` (reports Python version, git, MATLAB engine, and installs pip deps)
+- Built-in CLI check: `magatfairy systemfairy` (or `python -m cli.magatfairy systemfairy` on locked-down machines)
 
 ### 3. Run the Conversion Tool
 
@@ -99,36 +89,52 @@ magatfairy
 ```
 
 The tool will guide you through:
-1. **MAGAT Codebase Setup** - Provide path to existing codebase or clone automatically
-2. **Data Path Selection** - Choose root folder with multiple ESETs or single ESET directory
-3. **Output Directory** - Specify where H5 files should be saved
-4. **Conversion** - Process your data
+1. **Data Path Selection** - Choose root folder with multiple ESETs or single ESET directory
+2. **Output Directory** - Specify where H5 files should be saved
+3. **Conversion** - Process your data
+
+Note: MAGAT codebase is bundled by default. You can override it with `MAGAT_CODEBASE` environment variable if needed.
 
 ## Requirements
 
 ### Required
 - **Python 3.8+**
 - **MATLAB** (with MATLAB Engine for Python installed)
-- **MAGAT Codebase** - Can be cloned automatically or provided manually
+
+Note: MAGAT codebase is bundled with magatfairy at `matlab/core` and used by default. No external download needed.
 
 ### Optional
-- **Git** - Required for automatic codebase cloning (if you cloned magatfairy, you have git!)
+- **Git** - Required for cloning magatfairy repository (if you cloned magatfairy, you have git!)
 
 ## MAGAT Codebase
 
-The MAGAT (MATLAB Track Analysis) codebase is required for conversion. You have two options:
+magatfairy includes a bundled minimal subset of MAGAT (MATLAB Track Analysis) core classes at `matlab/core`. These are used by default, so no external download is required.
 
-### Option 1: Automatic Cloning (Recommended)
+### Using Bundled Classes (Default)
 
-If git is installed, the tool can clone it automatically:
-- Repository: [https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis)
-- Default location: `~/codebase/MAGATAnalyzer-Matlab-Analysis`
+The bundled classes are automatically used when you run magatfairy. No configuration needed.
 
-### Option 2: Manual Setup
+### Overriding with External Codebase
 
-If you already have the codebase:
-1. Clone manually: `git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git`
-2. Provide the path when prompted by `magatfairy.py`
+If you need to use a different MAGAT codebase (e.g., for additional features):
+1. Set the `MAGAT_CODEBASE` environment variable:
+   ```bash
+   # Windows PowerShell
+   $env:MAGAT_CODEBASE = "D:\path\to\MAGATAnalyzer-Matlab-Analysis"
+   
+   # Windows CMD
+   set MAGAT_CODEBASE=D:\path\to\MAGATAnalyzer-Matlab-Analysis
+   
+   # macOS/Linux
+   export MAGAT_CODEBASE=/path/to/MAGATAnalyzer-Matlab-Analysis
+   ```
+
+2. Or use the config command:
+   ```bash
+   magatfairy config set magat_codebase /path/to/MAGATAnalyzer-Matlab-Analysis
+   ```
+
+The bundled classes include the essential `DataManager`, `ExportManager`, `TrackManager`, and related classes needed for conversion.
 
 ## Data Structure
 
@@ -181,10 +187,10 @@ Each H5 file contains:
 ### Process Root Folder with Multiple ESETs
 
 ```bash
-magatfairy convert batch --root-dir /path/to/GMR61@GMR61 --output-dir /path/to/h5_output --codebase /path/to/magat
+magatfairy convert batch --root-dir /path/to/GMR61@GMR61 --output-dir /path/to/h5_output
 ```
 
-Or use auto-detect:
+Or use auto-detect (recommended):
 ```bash
 magatfairy convert auto /path/to/GMR61@GMR61
 ```
@@ -197,8 +203,10 @@ magatfairy convert auto /path/to/T_Re_Sq_0to250PWM_30#C_Bl_7PWM/
 
 Or use batch mode with ESET directory:
 ```bash
-magatfairy convert batch --root-dir /path/to/T_Re_Sq_0to250PWM_30#C_Bl_7PWM --output-dir /path/to/h5_output --codebase /path/to/magat
+magatfairy convert batch --root-dir /path/to/T_Re_Sq_0to250PWM_30#C_Bl_7PWM --output-dir /path/to/h5_output
 ```
+
+Note: The `--codebase` flag is optional. Bundled classes are used by default. Override with `MAGAT_CODEBASE` environment variable if needed.
 
 ## Troubleshooting
 
@@ -212,14 +220,11 @@ If you see "MATLAB Engine Not Found":
    python setup.py install
    ```
 
-### Git Not Found (for codebase cloning)
+### Git Not Found
 
-If git is not installed:
+If git is not installed and you need to clone magatfairy:
 1. Install git: https://git-scm.com/downloads
-2. Or clone the codebase manually:
-   ```bash
-   git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git
-   ```
+2. Or download magatfairy as a ZIP from GitHub
 
 ### No ESET Directories Found
 
@@ -227,9 +232,11 @@ Ensure your data folder contains subdirectories with `matfiles/` folders contain
 
 ### Conversion Errors
 
-- Check that MATLAB can access the MAGAT codebase
+- Run system check: `magatfairy systemfairy` to verify environment
+- Verify that bundled MAGAT classes are present at `matlab/core/@DataManager`
 - Verify that `.mat` files are in `matfiles/` subdirectories
 - Ensure output directory is writable
+- Check MATLAB Engine is properly installed
 
 ## Directory Structure
 
@@ -240,7 +247,13 @@ magatfairy/
 ├── requirements.txt             # Python dependencies
 ├── pyproject.toml               # Packaging + console_scripts entry
 ├── index.html                   # Landing page
-├── magatfairy.py                # Back-compat CLI entry (used by shim)
+│
+├── matlab/                      # Bundled MAGAT core classes
+│   └── core/                    # Minimal MATLAB classes (DataManager, etc.)
+│       ├── @DataManager/        # Data loading and management
+│       ├── @ExportManager/      # Export utilities
+│       ├── @TrackManager/       # Track management
+│       └── ...                  # Other core classes
 │
 ├── src/                         # Source code
 │   ├── install/                # Installation script (python src/install/install.py)
@@ -270,7 +283,7 @@ magatfairy/
     └── magat-license.md        # MAGAT Analyzer license info
 ```
 
-**Note:** The MAGAT Bridge code is included in `src/mat2h5/bridge.py`, so you don't need any external dependencies beyond MATLAB and the MAGAT codebase.
+**Note:** The MAGAT Bridge code is included in `src/mat2h5/bridge.py`, and MAGAT core classes are bundled at `matlab/core`. You don't need any external dependencies beyond MATLAB.
 
 ## Advanced Usage
 
@@ -303,15 +316,16 @@ The tool will automatically detect:
 - **Track** (track file or tracks directory)
 
 You'll be prompted for:
-- MAGAT codebase path (or set `MAGAT_CODEBASE` environment variable)
 - Output directory (default: `exports/` folder in the magatfairy repository)
+
+Note: MAGAT codebase is bundled and used automatically. Override with `MAGAT_CODEBASE` environment variable if needed.
 
 #### Manual Commands
 
 ```bash
 # Conversion commands
-magatfairy convert batch --root-dir /path/to/data --output-dir /path/to/output --codebase /path/to/magat
-magatfairy convert single --mat file.mat --output file.h5 --codebase /path/to/magat
+magatfairy convert batch --root-dir /path/to/data --output-dir /path/to/output
+magatfairy convert single --mat file.mat --output file.h5
 magatfairy convert append-camcal --eset-dir /path/to/eset
 magatfairy convert unlock --file file.h5
 
@@ -336,13 +350,15 @@ python src/scripts/convert/batch_export_esets.py --root-dir /path/to/data --outp
 
 ## Configuration
 
-Save your MAGAT codebase path to avoid entering it every time:
+Save your settings to avoid entering them every time:
 
 ```bash
-magatfairy config set magat_codebase /path/to/magat
+magatfairy config set magat_codebase /path/to/magat  # Optional: override bundled classes
 magatfairy config set default_output /path/to/exports
 magatfairy config show  # View all settings
 ```
+
+Note: `magat_codebase` is optional. Bundled classes at `matlab/core` are used by default.
 
 ## Troubleshooting
 
@@ -355,8 +371,10 @@ magatfairy config show  # View all settings
 - See: https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html
 
 ### Conversion Fails
-- Check that MAGAT codebase path is correct: `magatfairy config get magat_codebase`
-- Verify MATLAB can access the codebase
+- Run system check: `magatfairy systemfairy` (or `python -m cli.magatfairy systemfairy`)
+- Verify MATLAB Engine is installed and accessible
+- Check that bundled MAGAT classes are present: `matlab/core/@DataManager`
+- If using custom codebase, verify path: `magatfairy config get magat_codebase`
 - Check log file: `exports/conversion.log`
 
 ### Files Already Exist
