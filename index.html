@@ -298,11 +298,75 @@
         const structureGroups = [];
 
         // Create individual larvae above title (like GitHub homepage)
-        const larvaCount = 8;
+        const larvaCount = 12;
         const matlabLarvae = [];
         
+        // Larva colors matching GitHub homepage style
+        const larvaColors = [
+            0x7FFF00, // Chartreuse
+            0x7df9ff, // Electric blue
+            0x00ff88, // Mint
+            0xffffff, // White
+            0xffff00, // Yellow
+            0xff00ff, // Magenta
+            0x00ffff, // Cyan
+            0xff6600, // Orange
+            0x9933ff  // Purple
+        ];
+        
+        function createGitHubLarva(color) {
+            // Create segmented larva using CatmullRomCurve3 (like GitHub homepage)
+            const larvaLength = 0.8 + Math.random() * 0.4;
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(larvaLength * 0.3, 0, 0),
+                new THREE.Vector3(larvaLength * 0.6, 0, 0),
+                new THREE.Vector3(larvaLength, 0, 0)
+            ]);
+            
+            const points = curve.getPoints(20);
+            const larvaGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            
+            // Create glowing effect matching GitHub homepage
+            const larvaMaterial = new THREE.LineBasicMaterial({
+                color: color,
+                linewidth: 3,
+                opacity: 0.85,
+                transparent: true
+            });
+            
+            const larva = new THREE.Line(larvaGeometry, larvaMaterial);
+            
+            // Add glow effect using point light
+            const glowLight = new THREE.PointLight(color, 0.5, 1);
+            glowLight.position.set(larvaLength/2, 0, 0);
+            larva.add(glowLight);
+            
+            // Add motion properties
+            larva.userData = {
+                velocity: 0.02 + Math.random() * 0.03,
+                direction: Math.random() * Math.PI * 2,
+                lastTurn: 0,
+                turnInterval: 20 + Math.random() * 40,
+                wigglePhase: Math.random() * Math.PI * 2,
+                wiggleFrequency: 0.2 + Math.random() * 0.3,
+                wiggleAmount: 0.05 + Math.random() * 0.1,
+                size: 0.3 + Math.random() * 0.2,
+                trajectoryPoints: [],
+                trajectoryColor: new THREE.Color(color),
+                lastTrajectoryUpdate: 0,
+                trajectoryUpdateInterval: 3
+            };
+            
+            // Resize larva
+            larva.scale.set(larva.userData.size, larva.userData.size, larva.userData.size);
+            
+            return larva;
+        }
+        
         for (let i = 0; i < larvaCount; i++) {
-            const larva = createLarvaParticle(matlabColor);
+            const color = larvaColors[Math.floor(Math.random() * larvaColors.length)];
+            const larva = createGitHubLarva(color);
             
             // Position above title in a spread pattern
             const angle = (i / larvaCount) * Math.PI * 2;
@@ -313,16 +377,10 @@
                 -5 + (Math.random() - 0.5) * 2
             );
             
-            // Add random rotation
-            larva.rotation.z = Math.random() * Math.PI * 2;
-            
-            // Make more transparent
-            larva.children.forEach(child => {
-                if (child.material) {
-                    child.material.opacity = 0.4;
-                    child.material.transparent = true;
-                }
-            });
+            // Orient larva
+            larva.lookAt(0, 0, 0);
+            const randomRotation = Math.random() * Math.PI * 2;
+            larva.rotateOnAxis(new THREE.Vector3(0, 0, 1), randomRotation);
             
             scene.add(larva);
             matlabLarvae.push(larva);
@@ -429,30 +487,28 @@
         const conversionColor = new THREE.Color(conversionColors[0]);
 
         function createLarvaParticle(color) {
-            const larvaGroup = new THREE.Group();
+            // Use line-based style for particles too (matching GitHub homepage)
+            const larvaLength = 0.3 + Math.random() * 0.2;
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(larvaLength * 0.3, 0, 0),
+                new THREE.Vector3(larvaLength * 0.6, 0, 0),
+                new THREE.Vector3(larvaLength, 0, 0)
+            ]);
             
-            // Main body (elongated sphere)
-            const bodyGeo = new THREE.SphereGeometry(0.08, 8, 8);
-            const bodyMat = new THREE.MeshStandardMaterial({
+            const points = curve.getPoints(10);
+            const larvaGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            
+            const larvaMaterial = new THREE.LineBasicMaterial({
                 color: color,
-                emissive: color,
-                emissiveIntensity: 0.5,
-                metalness: 0.2,
-                roughness: 0.4,
-                transparent: true,
-                opacity: 0.9
+                linewidth: 2,
+                opacity: 0.8,
+                transparent: true
             });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.scale.set(1, 2, 1); // Elongate vertically
-            larvaGroup.add(body);
             
-            // Head (slightly larger)
-            const headGeo = new THREE.SphereGeometry(0.1, 8, 8);
-            const head = new THREE.Mesh(headGeo, bodyMat);
-            head.position.y = 0.15;
-            larvaGroup.add(head);
+            const larva = new THREE.Line(larvaGeometry, larvaMaterial);
             
-            return larvaGroup;
+            return larva;
         }
 
         for (let i = 0; i < larvaParticleCount; i++) {
@@ -550,22 +606,80 @@
             const elapsedTime = clock.getElapsedTime();
             const delta = clock.getDelta();
 
-            // Animate MATLAB larvae above title
+            // Animate MATLAB larvae above title (matching GitHub homepage style)
             matlabLarvae.forEach((larva, idx) => {
-                // Gentle floating motion
-                larva.position.y += Math.sin(elapsedTime * 0.5 + idx) * 0.01;
-                larva.position.x += Math.cos(elapsedTime * 0.3 + idx) * 0.005;
+                const ud = larva.userData;
+                if (!ud) return;
                 
-                // Slow rotation
-                larva.rotation.z += 0.002;
+                // Update wiggle phase
+                ud.wigglePhase += ud.wiggleFrequency || 0.2;
+                
+                // Decide if it's time to change direction
+                if (ud.lastTurn !== undefined) {
+                    ud.lastTurn += 1;
+                    if (ud.turnInterval && ud.lastTurn > ud.turnInterval) {
+                        ud.direction += (Math.random() - 0.5) * Math.PI;
+                        ud.lastTurn = 0;
+                        ud.turnInterval = 20 + Math.random() * 40;
+                    }
+                }
+                
+                // Apply small random direction changes
+                if (ud.direction) ud.direction += (Math.random() - 0.5) * 0.1;
+                
+                // Add wiggle effect to direction
+                const wiggleDirection = ud.direction + (ud.wiggleAmount ? Math.sin(ud.wigglePhase) * ud.wiggleAmount : 0);
+                
+                // Move in a gentle floating pattern
+                larva.position.y += Math.sin(elapsedTime * 0.5 + idx) * 0.01;
+                larva.position.x += Math.cos(wiggleDirection) * (ud.velocity || 0.02) * 0.1;
+                larva.position.z += Math.sin(wiggleDirection) * (ud.velocity || 0.02) * 0.1;
+                
+                // Rotate larva to face direction
+                if (wiggleDirection !== undefined) {
+                    larva.rotation.z = wiggleDirection;
+                }
+                
+                // Update trajectory
+                if (ud.lastTrajectoryUpdate !== undefined && ud.trajectoryUpdateInterval) {
+                    ud.lastTrajectoryUpdate++;
+                    if (ud.lastTrajectoryUpdate >= ud.trajectoryUpdateInterval) {
+                        ud.lastTrajectoryUpdate = 0;
+                        
+                        if (ud.trajectoryPoints) {
+                            ud.trajectoryPoints.push(larva.position.clone());
+                            
+                            // Limit trajectory length
+                            if (ud.trajectoryPoints.length > 20) {
+                                ud.trajectoryPoints.shift();
+                            }
+                            
+                            // Update trajectory line
+                            if (ud.trajectoryLine) {
+                                ud.trajectoryLine.geometry.dispose();
+                                ud.trajectoryLine.geometry = new THREE.BufferGeometry().setFromPoints(ud.trajectoryPoints);
+                            } else if (ud.trajectoryPoints.length > 1 && ud.trajectoryColor) {
+                                const material = new THREE.LineBasicMaterial({
+                                    color: ud.trajectoryColor,
+                                    transparent: true,
+                                    opacity: 0.6,
+                                    linewidth: 2
+                                });
+                                
+                                const geometry = new THREE.BufferGeometry().setFromPoints(ud.trajectoryPoints);
+                                const line = new THREE.Line(geometry, material);
+                                ud.trajectoryLine = line;
+                                scene.add(line);
+                            }
+                        }
+                    }
+                }
                 
                 // Gentle pulsing opacity
-                const pulse = 0.4 + Math.sin(elapsedTime * 2 + idx) * 0.1;
-                larva.children.forEach(child => {
-                    if (child.material) {
-                        child.material.opacity = pulse;
-                    }
-                });
+                const pulse = 0.7 + Math.sin(elapsedTime * 2 + idx) * 0.15;
+                if (larva.material) {
+                    larva.material.opacity = pulse;
+                }
             });
 
             // Animate H5 biased random walk clusters (larvae)
