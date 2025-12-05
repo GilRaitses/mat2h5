@@ -233,5 +233,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- MAGAT Analyzer: Samuel Lab (SkanataLab)
-- MATLAB Track Analysis: https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab
+- **MAGAT Analyzer**: Samuel Lab (SkanataLab)
+- **MATLAB Track Analysis**: [https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab](https://github.com/SkanataLab/Matlab-Track-Analysis-SkanataLab)
