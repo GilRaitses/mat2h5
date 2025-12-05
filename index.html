@@ -58,12 +58,18 @@
             justify-content: center;
             align-items: center;
             pointer-events: none;
+            opacity: 0; /* Start hidden, will fade in */
+            transition: opacity 2s ease-in-out;
+        }
+
+        #main-fairy-background.visible {
+            opacity: 1;
         }
 
         #main-fairy-background .fairy-container {
             position: relative;
             display: inline-block !important;
-            opacity: 0.6;
+            opacity: 0.4;
             mix-blend-mode: multiply;
         }
 
@@ -217,13 +223,9 @@
         }
 
         #loading-screen.hidden {
-            opacity: 0.4;
-            z-index: 1;
+            opacity: 0;
+            z-index: -1;
             pointer-events: none;
-        }
-
-        #loading-screen.hidden .fairy-art {
-            opacity: 0.4;
         }
 
         .fairy-art {
@@ -235,10 +237,8 @@
             position: relative;
             z-index: 2;
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-            animation: fadeInFairy 1s ease-in;
             mix-blend-mode: multiply;
             opacity: 0.4;
-            transition: opacity 2s ease-in-out;
         }
 
         @keyframes fadeInFairy {
@@ -483,6 +483,8 @@
             hideLoadingScreen();
         }, { once: true });
         
+        const mainFairyBackground = document.getElementById('main-fairy-background');
+
         function hideLoadingScreen() {
             if (!loadingScreen) return;
             
@@ -493,6 +495,10 @@
                 if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
                     // Fade to background instead of hiding
                     loadingScreen.classList.add('hidden');
+                    // Show main fairy background
+                    if (mainFairyBackground) {
+                        mainFairyBackground.classList.add('visible');
+                    }
                     // Keep it visible but as background
                     loadingScreen.style.pointerEvents = 'none';
                 }
