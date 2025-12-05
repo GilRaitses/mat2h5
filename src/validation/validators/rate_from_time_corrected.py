@@ -26,7 +26,7 @@ to hundreds per minute instead of realistic values.
 This is a CORRECTED version that uses NON-OVERLAPPING bins of size bin_size.
 Rate = counts / bin_size (events per second)
 
-MATLAB equivalent: validation/matlab/rate_from_time_corrected.m
+MATLAB equivalent: src/validation/reference/rate_from_time_corrected.m
 """
 
 import numpy as np

@@ -18,7 +18,7 @@ Mathematical Definition:
     HeadUnitVec = HeadVec / ||HeadVec||
 
 Documentation: scripts/2025-11-24/mason_script_3_reverse_crawl.qmd
-MATLAB equivalent: validation/matlab/compute_heading_unit_vector.m
+MATLAB equivalent: src/validation/reference/compute_heading_unit_vector.m
 """
 
 import numpy as np

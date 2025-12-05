@@ -277,8 +277,8 @@ def generate_report(
 
 ## Files
 
-- **MATLAB script:** `validation/matlab/load_experiment_and_compute.m`
-- **Python script:** `validation/python/load_experiment_and_compute.py`
+- **MATLAB script:** `src/validation/reference/load_experiment_and_compute.m`
+- **Python script:** `src/validation/validators/load_experiment_and_compute.py`
 - **MATLAB output:** `validation/test_data/matlab_speedrunvel.csv`
 - **Python output:** `validation/test_data/python_speedrunvel.csv`
 

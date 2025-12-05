@@ -21,7 +21,7 @@ import h5py
 import os
 
 # Import MAGAT Bridge from mat2h5 package
-# Path: src/scripts/conversion/ -> src/mat2h5/
+# Path: src/scripts/convert/
 src_path = Path(__file__).parent.parent.parent / "mat2h5"
 sys.path.insert(0, str(src_path.parent))
 

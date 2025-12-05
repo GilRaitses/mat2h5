@@ -15,8 +15,7 @@ from pathlib import Path
 import shutil
 
 # Add paths for imports
-sys.path.insert(0, str(Path(__file__).parent / "python"))
-sys.path.insert(0, str(Path(r"D:\INDYsim\src\@matlab_conversion")))
+sys.path.insert(0, str(Path(__file__).parent))
 
 from validate_h5_schema import validate_h5_schema
 

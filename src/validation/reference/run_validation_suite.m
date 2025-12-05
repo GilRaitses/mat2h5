@@ -6,7 +6,7 @@
 % 3. Saves test vectors to test_data/ for Python comparison
 %
 % Usage:
-%   cd('scripts/2025-12-04/mat2h5/validation/matlab');
+%   cd('src/validation/reference');
 %   run_validation_suite;
 %
 % Output:

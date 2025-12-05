@@ -17,7 +17,7 @@ A turn is detected when the cumulative heading angle change exceeds
 the threshold within a sliding window.
 
 Documentation: scripts/2025-11-24/mason_script_4_behavior_analysis.qmd
-MATLAB equivalent: validation/matlab/detect_turn_events.m
+MATLAB equivalent: src/validation/reference/detect_turn_events.m
 """
 
 import numpy as np

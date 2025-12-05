@@ -29,7 +29,7 @@ Interpretation:
     SpeedRunVel = 0  →  Stationary or perpendicular movement
 
 Documentation: scripts/2025-11-24/mason_scripts_documentation.qmd (Section 3)
-MATLAB equivalent: validation/matlab/compute_speedrunvel.m
+MATLAB equivalent: src/validation/reference/compute_speedrunvel.m
 """
 
 import numpy as np

@@ -185,22 +185,21 @@ mat2h5/
 ├── mat2h5.py                   # Main entry point (CLI tool)
 │
 ├── src/                         # Source code
-│   ├── mat2h5/                 # Package directory
+│   ├── mat2h5/                 # Core package (stable API)
 │   │   ├── __init__.py         # Package initialization
 │   │   └── bridge.py           # MAGAT Bridge (MATLAB interface)
-│   └── scripts/                 # User-facing scripts
-│       ├── conversion/          # MATLAB → H5 conversion tools
-│       │   ├── convert_matlab_to_h5.py    # Core conversion logic
-│       │   ├── batch_export_esets.py      # Batch processing
-│       │   ├── append_camcal_to_h5.py     # Camera calibration
-│       │   └── unlock_h5_file.py          # H5 file utilities
-│       └── analysis/            # H5 analysis scripts
-│           ├── engineer_data.py           # Basic analysis
-│           └── engineer_dataset_from_h5.py # Enhanced analysis
-│
-├── validation/                  # Validation framework (optional)
-│   ├── matlab/                 # MATLAB reference scripts
-│   └── python/                 # Python validation scripts
+│   ├── scripts/                 # User-facing scripts (separate from package)
+│   │   ├── convert/             # MATLAB → H5 conversion tools
+│   │   │   ├── convert_matlab_to_h5.py    # Core conversion logic
+│   │   │   ├── batch_export_esets.py      # Batch processing
+│   │   │   ├── append_camcal_to_h5.py     # Camera calibration
+│   │   │   └── unlock_h5_file.py          # H5 file utilities
+│   │   └── analyze/             # H5 analysis scripts
+│   │       ├── engineer_data.py           # Basic analysis
+│   │       └── engineer_dataset_from_h5.py # Enhanced analysis
+│   └── validation/              # Validation framework (separate from package)
+│       ├── reference/           # MATLAB reference implementations
+│       └── validators/          # Python validation scripts
 │
 └── docs/                        # Additional documentation
     ├── field-mapping.md        # MATLAB to H5 field reference
@@ -211,12 +210,34 @@ mat2h5/
 
 ## Advanced Usage
 
-### Command-Line Interface (Future)
+### Command-Line Interface
 
-Direct command-line usage is planned for future versions:
+mat2h5 provides a CLI with subcommands for all operations:
 
 ```bash
-python mat2h5.py --root-dir /path/to/data --output /path/to/output --codebase /path/to/codebase
+# Conversion commands
+mat2h5 convert batch --root-dir /path/to/data --output-dir /path/to/output --codebase /path/to/magat
+mat2h5 convert single --mat file.mat --output file.h5 --codebase /path/to/magat
+mat2h5 convert append-camcal --eset-dir /path/to/eset
+mat2h5 convert unlock --file file.h5
+
+# Analysis commands
+mat2h5 analyze engineer --h5 file.h5
+mat2h5 analyze dataset --h5 file.h5
+
+# Validation commands
+mat2h5 validate schema --h5 file.h5
+mat2h5 validate integrity --mat file.mat --h5 file.h5
+mat2h5 validate full --base-dir /path/to/data
+
+# Help
+mat2h5 --help
+mat2h5 convert --help
+```
+
+Scripts can also be run directly:
+```bash
+python src/scripts/convert/batch_export_esets.py --root-dir /path/to/data --output-dir /path/to/output
 ```
 
 ## Support

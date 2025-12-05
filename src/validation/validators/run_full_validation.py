@@ -14,8 +14,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Tuple
 
-# Add parent to path for imports
-sys.path.insert(0, str(Path(__file__).parent / 'python'))
+# Add current directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
 
 from validate_h5_schema import validate_h5_schema, print_results
 

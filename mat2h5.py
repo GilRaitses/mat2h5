@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 """
 mat2h5 - MATLAB to H5 Conversion Tool
-Main entry point for converting MAGAT experiment data to H5 format.
+CLI entry point for converting MAGAT experiment data to H5 format.
 
 Usage:
-    python mat2h5.py
+    mat2h5 convert batch --root-dir /path/to/data --output /path/to/output --codebase /path/to/magat
+    mat2h5 convert single --mat file.mat --output file.h5 --codebase /path/to/magat
+    mat2h5 analyze engineer --h5 file.h5
+    mat2h5 validate schema --h5 file.h5
 """
 
 import sys
-import subprocess
-import shutil
+import argparse
 from pathlib import Path
-import os
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # MAGAT codebase repository (Samuel Lab)
 MAGAT_REPO_URL = "https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git"
 MAGAT_REPO_NAME = "MAGATAnalyzer-Matlab-Analysis"
+
 
 def check_matlab_engine():
     """Check if MATLAB Engine for Python is available"""
@@ -25,335 +30,251 @@ def check_matlab_engine():
     except ImportError:
         return False
 
-def check_git():
-    """Check if git is installed"""
-    return shutil.which('git') is not None
 
-def clone_magat_codebase(codebase_path=None):
-    """
-    Clone the MAGAT codebase using git or provide instructions.
+def create_parser():
+    """Create the main argument parser with subcommands"""
+    parser = argparse.ArgumentParser(
+        description="MATLAB to H5 Conversion Tool",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Convert all ESETs in a directory
+  mat2h5 convert batch --root-dir /data/GMR61@GMR61 --output /h5_output --codebase /path/to/magat
+  
+  # Convert a single experiment
+  mat2h5 convert single --mat experiment.mat --output experiment.h5 --codebase /path/to/magat
+  
+  # Analyze H5 file
+  mat2h5 analyze engineer --h5 file.h5
+  
+  # Validate H5 schema
+  mat2h5 validate schema --h5 file.h5
+        """
+    )
     
-    Args:
-        codebase_path: Optional path where codebase should be cloned.
-                       If None, will prompt user.
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
-    Returns:
-        Path to cloned codebase, or None if cloning failed
-    """
-    if not check_git():
-        print("\n" + "=" * 70)
-        print("Git is not installed, but you need it to clone the MAGAT codebase.")
-        print("=" * 70)
-        print("\nPlease install git, or clone the repository manually:")
-        print(f"\n  Repository: {MAGAT_REPO_URL}")
-        print(f"  Clone to: {codebase_path or 'a directory of your choice'}")
-        print("\nAfter cloning, run this script again and provide the path.")
-        return None
+    # Convert subcommands
+    convert_parser = subparsers.add_parser('convert', help='Conversion commands')
+    convert_subparsers = convert_parser.add_subparsers(dest='subcommand', help='Conversion subcommands')
     
-    if codebase_path is None:
-        default_path = Path.home() / "codebase" / MAGAT_REPO_NAME
-        print(f"\nWhere should the MAGAT codebase be cloned?")
-        print(f"  [Press Enter for default: {default_path}]")
-        user_input = input("  Path: ").strip()
-        
-        if user_input:
-            codebase_path = Path(user_input)
-        else:
-            codebase_path = default_path
+    # convert batch
+    batch_parser = convert_subparsers.add_parser('batch', help='Batch convert all ESETs in a directory')
+    batch_parser.add_argument('--root-dir', required=True, help='Root directory containing ESET folders')
+    batch_parser.add_argument('--output-dir', required=True, help='Output directory for H5 files')
+    batch_parser.add_argument('--codebase', required=True, help='Path to MAGAT codebase')
     
-    codebase_path = Path(codebase_path)
+    # convert single
+    single_parser = convert_subparsers.add_parser('single', help='Convert a single experiment')
+    single_parser.add_argument('--mat', required=True, help='Path to .mat experiment file')
+    single_parser.add_argument('--tracks', help='Path to tracks directory')
+    single_parser.add_argument('--bin', help='Path to .bin file')
+    single_parser.add_argument('--output', required=True, help='Output H5 file path')
+    single_parser.add_argument('--codebase', required=True, help='Path to MAGAT codebase')
     
-    # If already exists, check if it's a git repo
-    if codebase_path.exists():
-        if (codebase_path / ".git").exists():
-            print(f"\n✓ MAGAT codebase already exists at: {codebase_path}")
-            return codebase_path
-        else:
-            print(f"\n⚠ Directory exists but is not a git repository: {codebase_path}")
-            response = input("  Remove and re-clone? [y/N]: ").strip().lower()
-            if response == 'y':
-                shutil.rmtree(codebase_path)
-            else:
-                print("  Please provide a different path or remove the directory manually.")
-                return None
+    # convert append-camcal
+    camcal_parser = convert_subparsers.add_parser('append-camcal', help='Append camera calibration to H5 files')
+    camcal_parser.add_argument('--eset-dir', required=True, help='ESET directory containing H5 files')
     
-    # Clone the repository
-    print(f"\nCloning MAGAT codebase to: {codebase_path}")
-    print(f"  Repository: {MAGAT_REPO_URL}")
-    print("  This may take a few minutes...")
+    # convert unlock
+    unlock_parser = convert_subparsers.add_parser('unlock', help='Unlock a locked H5 file')
+    unlock_parser.add_argument('--file', required=True, help='Path to H5 file')
+    unlock_parser.add_argument('--force-delete', action='store_true', help='Force delete lock file')
     
-    try:
-        codebase_path.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.check_call([
-            'git', 'clone', MAGAT_REPO_URL, str(codebase_path)
-        ])
-        print(f"\n✓ Successfully cloned MAGAT codebase to: {codebase_path}")
-        return codebase_path
-        
-    except subprocess.CalledProcessError as e:
-        print(f"\n✗ Failed to clone repository. Exit code: {e.returncode}")
-        print("\nPlease clone manually:")
-        print(f"  git clone {MAGAT_REPO_URL} {codebase_path}")
-        return None
+    # Analyze subcommands
+    analyze_parser = subparsers.add_parser('analyze', help='Analysis commands')
+    analyze_subparsers = analyze_parser.add_subparsers(dest='subcommand', help='Analysis subcommands')
+    
+    # analyze engineer
+    engineer_parser = analyze_subparsers.add_parser('engineer', help='Engineer data from H5 file')
+    engineer_parser.add_argument('--h5', required=True, help='Path to H5 file')
+    
+    # analyze dataset
+    dataset_parser = analyze_subparsers.add_parser('dataset', help='Engineer dataset from H5 file')
+    dataset_parser.add_argument('--h5', required=True, help='Path to H5 file')
+    
+    # Validate subcommands
+    validate_parser = subparsers.add_parser('validate', help='Validation commands')
+    validate_subparsers = validate_parser.add_subparsers(dest='subcommand', help='Validation subcommands')
+    
+    # validate schema
+    schema_parser = validate_subparsers.add_parser('schema', help='Validate H5 file schema')
+    schema_parser.add_argument('--h5', required=True, help='Path to H5 file')
+    schema_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+    
+    # validate integrity
+    integrity_parser = validate_subparsers.add_parser('integrity', help='Compare H5 data integrity with MATLAB source')
+    integrity_parser.add_argument('--mat', required=True, help='Path to MATLAB .mat file')
+    integrity_parser.add_argument('--h5', required=True, help='Path to H5 file')
+    integrity_parser.add_argument('--tracks', nargs='+', type=int, help='Specific track numbers to compare')
+    integrity_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+    
+    # validate full
+    full_parser = validate_subparsers.add_parser('full', help='Run full validation suite')
+    full_parser.add_argument('--base-dir', required=True, help='Base directory containing ESETs')
+    full_parser.add_argument('--verbose', action='store_true', help='Verbose output')
+    full_parser.add_argument('--output', help='Save results to JSON file')
+    
+    return parser
 
-def get_magat_codebase_path():
-    """
-    Get or clone the MAGAT codebase path.
-    Prompts user for existing path or offers to clone.
-    """
-    print("\n" + "=" * 70)
-    print("MAGAT Codebase Setup")
-    print("=" * 70)
-    print("\nThe MAGAT (MATLAB Track Analysis) codebase is required for conversion.")
-    print("You can either:")
-    print("  1. Provide the path to an existing codebase")
-    print("  2. Clone it automatically (requires git)")
-    print()
-    
-    response = input("Do you have the MAGAT codebase already? [y/N]: ").strip().lower()
-    
-    if response == 'y':
-        print("\nEnter the path to the MAGAT codebase:")
-        print("  (Should contain folders like @DataManager, @ExperimentSet, etc.)")
-        codebase_path = input("  Path: ").strip()
-        
-        if codebase_path:
-            codebase_path = Path(codebase_path)
-            if codebase_path.exists() and (codebase_path / "@DataManager").exists():
-                print(f"\n✓ Found MAGAT codebase at: {codebase_path}")
-                return codebase_path
-            else:
-                print(f"\n⚠ Path does not appear to be a valid MAGAT codebase.")
-                print("  Looking for @DataManager folder...")
-                retry = input("  Try again? [y/N]: ").strip().lower()
-                if retry == 'y':
-                    return get_magat_codebase_path()
-                return None
-        return None
-    else:
-        # Offer to clone
-        print("\nWould you like to clone the MAGAT codebase automatically?")
-        response = input("  [Y/n]: ").strip().lower()
-        
-        if response != 'n':
-            return clone_magat_codebase()
-        else:
-            print(f"\nPlease clone manually from: {MAGAT_REPO_URL}")
-            print("Then run this script again and provide the path.")
-            return None
 
-def find_eset_directories(root_path):
-    """Find ESET directories in the given root path"""
-    root_path = Path(root_path)
-    esets = []
-    
-    # Look for directories that might contain matfiles/ subdirectory
-    for item in root_path.iterdir():
-        if item.is_dir():
-            matfiles_dir = item / "matfiles"
-            if matfiles_dir.exists() and list(matfiles_dir.glob("*.mat")):
-                esets.append(item)
-    
-    return esets
+def handle_convert_batch(args):
+    """Handle convert batch command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "scripts" / "convert" / "batch_export_esets.py"
+    spec = importlib.util.spec_from_file_location("batch_export_esets", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['batch_export_esets.py', '--root-dir', args.root_dir, 
+                '--output-dir', args.output_dir, '--codebase', args.codebase]
+    spec.loader.exec_module(module)
+    return module.main()
 
-def get_data_path():
-    """
-    Get the path to data directory (root with esets or single eset).
-    """
-    print("\n" + "=" * 70)
-    print("Data Path Selection")
-    print("=" * 70)
-    print("\nYou can process either:")
-    print("  1. A root folder containing multiple ESET directories")
-    print("  2. A single ESET directory")
-    print()
-    
-    response = input("Process multiple ESETs or single ESET? [m/S]: ").strip().lower()
-    
-    if response == 'm':
-        print("\nEnter the path to the root folder containing ESET directories:")
-        print("  (e.g., /path/to/GMR61@GMR61/)")
-        root_path = input("  Path: ").strip()
-        
-        if root_path:
-            root_path = Path(root_path)
-            if root_path.exists():
-                esets = find_eset_directories(root_path)
-                if esets:
-                    print(f"\n✓ Found {len(esets)} ESET directories:")
-                    for eset in esets[:10]:  # Show first 10
-                        print(f"    - {eset.name}")
-                    if len(esets) > 10:
-                        print(f"    ... and {len(esets) - 10} more")
-                    return root_path, 'root'
-                else:
-                    print(f"\n⚠ No ESET directories found in: {root_path}")
-                    print("  (Looking for directories containing 'matfiles/' with .mat files)")
-                    return None, None
-            else:
-                print(f"\n✗ Path does not exist: {root_path}")
-                return None, None
-    
-    # Single ESET
-    print("\nEnter the path to a single ESET directory:")
-    print("  (Should contain 'matfiles/' subdirectory)")
-    eset_path = input("  Path: ").strip()
-    
-    if eset_path:
-        eset_path = Path(eset_path)
-        matfiles_dir = eset_path / "matfiles"
-        if eset_path.exists():
-            if matfiles_dir.exists():
-                print(f"\n✓ Found ESET directory: {eset_path.name}")
-                return eset_path, 'single'
-            else:
-                print(f"\n⚠ ESET directory does not contain 'matfiles/' subdirectory")
-                print(f"  Path: {eset_path}")
-                return None, None
-        else:
-            print(f"\n✗ Path does not exist: {eset_path}")
-            return None, None
-    
-    return None, None
 
-def get_output_directory():
-    """Get output directory for H5 files"""
-    print("\n" + "=" * 70)
-    print("Output Directory")
-    print("=" * 70)
-    
-    default_output = Path.cwd() / "h5_output"
-    print(f"\nWhere should H5 files be saved?")
-    print(f"  [Press Enter for default: {default_output}]")
-    output_path = input("  Path: ").strip()
-    
-    if output_path:
-        output_dir = Path(output_path)
-    else:
-        output_dir = default_output
-    
-    output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"\n✓ Output directory: {output_dir}")
-    return output_dir
+def handle_convert_single(args):
+    """Handle convert single command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "scripts" / "convert" / "convert_matlab_to_h5.py"
+    spec = importlib.util.spec_from_file_location("convert_matlab_to_h5", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['convert_matlab_to_h5.py', '--mat', args.mat, 
+                '--output', args.output, '--codebase', args.codebase]
+    if args.tracks:
+        sys.argv.extend(['--tracks', args.tracks])
+    if args.bin:
+        sys.argv.extend(['--bin', args.bin])
+    spec.loader.exec_module(module)
+    return module.main()
 
-def run_conversion(data_path, data_type, codebase_path, output_dir):
-    """Run the actual conversion using batch_export_esets.py"""
-    script_path = Path(__file__).parent / "src" / "scripts" / "conversion" / "batch_export_esets.py"
-    
-    if not script_path.exists():
-        print(f"\n✗ Conversion script not found: {script_path}")
-        return False
-    
-    print("\n" + "=" * 70)
-    print("Starting Conversion")
-    print("=" * 70)
-    print(f"\nData path: {data_path}")
-    print(f"Data type: {data_type}")
-    print(f"Codebase: {codebase_path}")
-    print(f"Output: {output_dir}")
-    print()
-    
-    # Set environment variables for the conversion script
-    env = os.environ.copy()
-    env['MAGAT_CODEBASE'] = str(codebase_path)
-    env['MAT2H5_ROOT'] = str(Path(__file__).parent)
-    env['PYTHONPATH'] = str(Path(__file__).parent / "src") + os.pathsep + env.get('PYTHONPATH', '')
-    
-    # Note: convert_matlab_to_h5.py may need MAGAT Bridge
-    # If you have it in a specific location, set MAGAT_BRIDGE_PATH
-    # Otherwise, the script will try to find it or use built-in bridge
-    
-    # Run the batch export script
-    try:
-        if data_type == 'root':
-            # Process root directory with multiple ESETs
-            subprocess.check_call([
-                sys.executable, str(script_path),
-                '--root-dir', str(data_path),
-                '--output-dir', str(output_dir),
-                '--codebase', str(codebase_path)
-            ], env=env)
-        else:
-            # Process single ESET
-            subprocess.check_call([
-                sys.executable, str(script_path),
-                '--eset-dir', str(data_path),
-                '--output-dir', str(output_dir),
-                '--codebase', str(codebase_path)
-            ], env=env)
-        
-        print("\n" + "=" * 70)
-        print("✓ Conversion complete!")
-        print("=" * 70)
-        print(f"\nH5 files saved to: {output_dir}")
-        return True
-        
-    except subprocess.CalledProcessError as e:
-        print(f"\n✗ Conversion failed. Exit code: {e.returncode}")
-        return False
-    except KeyboardInterrupt:
-        print("\n\nConversion interrupted by user.")
-        return False
+
+def handle_convert_append_camcal(args):
+    """Handle convert append-camcal command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "scripts" / "convert" / "append_camcal_to_h5.py"
+    spec = importlib.util.spec_from_file_location("append_camcal_to_h5", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['append_camcal_to_h5.py', '--eset-dir', args.eset_dir]
+    spec.loader.exec_module(module)
+    return module.main()
+
+
+def handle_convert_unlock(args):
+    """Handle convert unlock command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "scripts" / "convert" / "unlock_h5_file.py"
+    spec = importlib.util.spec_from_file_location("unlock_h5_file", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['unlock_h5_file.py', '--file', args.file]
+    if args.force_delete:
+        sys.argv.append('--force-delete')
+    spec.loader.exec_module(module)
+    return module.main()
+
+
+def handle_analyze_engineer(args):
+    """Handle analyze engineer command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "scripts" / "analyze" / "engineer_data.py"
+    spec = importlib.util.spec_from_file_location("engineer_data", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['engineer_data.py', '--h5', args.h5]
+    spec.loader.exec_module(module)
+    return module.main()
+
+
+def handle_analyze_dataset(args):
+    """Handle analyze dataset command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "scripts" / "analyze" / "engineer_dataset_from_h5.py"
+    spec = importlib.util.spec_from_file_location("engineer_dataset_from_h5", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['engineer_dataset_from_h5.py', '--h5', args.h5]
+    spec.loader.exec_module(module)
+    return module.main()
+
+
+def handle_validate_schema(args):
+    """Handle validate schema command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "validation" / "validators" / "validate_h5_schema.py"
+    spec = importlib.util.spec_from_file_location("validate_h5_schema", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['validate_h5_schema.py', args.h5]
+    if args.verbose:
+        sys.argv.append('--verbose')
+    spec.loader.exec_module(module)
+    return module.main()
+
+
+def handle_validate_integrity(args):
+    """Handle validate integrity command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "validation" / "validators" / "validate_data_integrity.py"
+    spec = importlib.util.spec_from_file_location("validate_data_integrity", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['validate_data_integrity.py', args.mat, args.h5]
+    if args.tracks:
+        sys.argv.extend(['--tracks'] + [str(t) for t in args.tracks])
+    if args.verbose:
+        sys.argv.append('--verbose')
+    spec.loader.exec_module(module)
+    return module.main()
+
+
+def handle_validate_full(args):
+    """Handle validate full command"""
+    import importlib.util
+    script_path = Path(__file__).parent / "src" / "validation" / "validators" / "run_full_validation.py"
+    spec = importlib.util.spec_from_file_location("run_full_validation", script_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.argv = ['run_full_validation.py', '--base-dir', args.base_dir]
+    if args.verbose:
+        sys.argv.append('--verbose')
+    if args.output:
+        sys.argv.extend(['--output', args.output])
+    spec.loader.exec_module(module)
+    return module.main()
+
 
 def main():
     """Main entry point"""
-    print("=" * 70)
-    print("mat2h5 - MATLAB to H5 Conversion Tool")
-    print("=" * 70)
-    print("\nThis tool converts MAGAT experiment data to H5 format.")
-    print("It requires MATLAB and the MAGAT codebase.")
+    parser = create_parser()
+    args = parser.parse_args()
     
-    # Check MATLAB Engine
-    if not check_matlab_engine():
-        print("\n" + "=" * 70)
-        print("MATLAB Engine Not Found")
-        print("=" * 70)
-        print("\nMATLAB Engine for Python is required.")
-        print("Please install it from MATLAB:")
-        print("  cd matlabroot/extern/engines/python")
-        print("  python setup.py install")
-        print("\nOr see: https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html")
+    if not args.command:
+        parser.print_help()
         sys.exit(1)
     
-    print("\n✓ MATLAB Engine found")
+    # Check MATLAB Engine only for commands that need it
+    matlab_commands = ['convert']
+    if args.command in matlab_commands:
+        if not check_matlab_engine():
+            print("ERROR: MATLAB Engine for Python is required.")
+            print("Please install it from MATLAB:")
+            print("  cd matlabroot/extern/engines/python")
+            print("  python setup.py install")
+            print("\nOr see: https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html")
+            sys.exit(1)
     
-    # Get MAGAT codebase
-    codebase_path = get_magat_codebase_path()
-    if not codebase_path:
-        print("\n✗ Cannot proceed without MAGAT codebase.")
-        sys.exit(1)
+    # Route to appropriate handler
+    handlers = {
+        ('convert', 'batch'): handle_convert_batch,
+        ('convert', 'single'): handle_convert_single,
+        ('convert', 'append-camcal'): handle_convert_append_camcal,
+        ('convert', 'unlock'): handle_convert_unlock,
+        ('analyze', 'engineer'): handle_analyze_engineer,
+        ('analyze', 'dataset'): handle_analyze_dataset,
+        ('validate', 'schema'): handle_validate_schema,
+        ('validate', 'integrity'): handle_validate_integrity,
+        ('validate', 'full'): handle_validate_full,
+    }
     
-    # Get data path
-    data_path, data_type = get_data_path()
-    if not data_path:
-        print("\n✗ Cannot proceed without data path.")
-        sys.exit(1)
-    
-    # Get output directory
-    output_dir = get_output_directory()
-    
-    # Confirm and run
-    print("\n" + "=" * 70)
-    print("Ready to Convert")
-    print("=" * 70)
-    print(f"\nData: {data_path}")
-    print(f"Codebase: {codebase_path}")
-    print(f"Output: {output_dir}")
-    print()
-    
-    response = input("Start conversion? [Y/n]: ").strip().lower()
-    if response == 'n':
-        print("\nConversion cancelled.")
-        sys.exit(0)
-    
-    # Run conversion
-    success = run_conversion(data_path, data_type, codebase_path, output_dir)
-    
-    if success:
-        sys.exit(0)
+    handler = handlers.get((args.command, args.subcommand))
+    if handler:
+        sys.exit(handler(args))
     else:
+        parser.print_help()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
-

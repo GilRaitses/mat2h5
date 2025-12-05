@@ -17,8 +17,8 @@ def main():
     print("=" * 60)
     print()
     
-    # Get the matlab script directory
-    script_dir = Path(__file__).parent / "matlab"
+    # Get the reference script directory
+    script_dir = Path(__file__).parent.parent / "reference"
     
     print(f"Starting MATLAB engine...")
     eng = matlab.engine.start_matlab()

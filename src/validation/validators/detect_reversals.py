@@ -18,7 +18,7 @@ A reversal is defined as a continuous period where SpeedRunVel < 0
 lasting at least min_duration seconds.
 
 Documentation: scripts/2025-11-24/mason_script_4_behavior_analysis.qmd
-MATLAB equivalent: validation/matlab/detect_reversals.m
+MATLAB equivalent: src/validation/reference/detect_reversals.m
 """
 
 import numpy as np
