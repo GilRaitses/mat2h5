@@ -170,11 +170,10 @@
 
         .fairy-gradient {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300%;
-            height: 300%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 400%;
+            height: 400%;
             background: conic-gradient(
                 from 0deg,
                 #ff6b35 0deg,
@@ -195,16 +194,16 @@
 
         @keyframes swirlGradient {
             0% {
-                background-position: 0% 50%;
-                transform: translate(-50%, -50%) rotate(0deg);
+                background-position: 0% 0%;
+                transform: translate(-25%, -25%) rotate(0deg);
             }
             50% {
-                background-position: 100% 50%;
-                transform: translate(-50%, -50%) rotate(180deg);
+                background-position: 100% 100%;
+                transform: translate(-25%, -25%) rotate(180deg);
             }
             100% {
-                background-position: 0% 50%;
-                transform: translate(-50%, -50%) rotate(360deg);
+                background-position: 0% 0%;
+                transform: translate(-25%, -25%) rotate(360deg);
             }
         }
 
