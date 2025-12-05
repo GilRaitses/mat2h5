@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>magat fairy - MATLAB to H5 Conversion Tool</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap">
+    <title>magat fairy</title>
     <style>
         * {
             margin: 0;
@@ -13,1120 +12,642 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            background: #7fff00; /* Chartreuse */
-            color: #000000;
+            background: #7fff00; /* chartreuse */
+            width: 100vw;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
         }
 
-        #canvas-container {
+        #fairy-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
+            font-size: 6px;
+            line-height: 1;
+            white-space: pre;
+            color: #000;
+            background: #7fff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+            text-rendering: geometricPrecision;
+            -webkit-font-smoothing: subpixel-antialiased;
+            opacity: 0.7;
             z-index: 1;
-            background: transparent;
-            opacity: 0;
-            transition: opacity 2s ease-in-out;
-        }
-
-        #canvas-container.visible {
-            opacity: 1;
+            pointer-events: none;
         }
 
         #content {
             position: relative;
-            z-index: 2;
+            z-index: 10;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            text-align: center;
-            padding: 2rem;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 2s ease-in-out;
+            justify-content: flex-start;
+            padding: 20px 20px 40px 20px;
         }
 
-        #content.visible {
+        #title-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #title-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #title-text {
+            position: relative;
+            z-index: 2;
+            font-family: 'Avenir', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 1.5px;
+            text-transform: lowercase;
+            color: #000;
+            text-shadow:
+                0 0 12px rgba(184, 230, 255, 0.5),
+                0 0 16px rgba(255, 228, 225, 0.45),
+                0 0 20px rgba(255, 245, 230, 0.4);
+        }
+
+        @media (max-width: 900px) {
+            #title-text {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #title-text {
+                font-size: 30px;
+            }
+        }
+
+        #title-gradient-overlay,
+        #title-gradient-overlay-2,
+        #title-gradient-overlay-3,
+        #title-gradient-overlay-4,
+        #title-gradient-overlay-5 {
+            position: absolute;
+            inset: -400%;
+            width: 1800%;
+            height: 1800%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #title-gradient-overlay {
+            opacity: 0.05;
+            background: conic-gradient(
+                from 0deg,
+                rgba(139, 0, 0, 0.03) 0%,
+                rgba(128, 0, 32, 0.025) 25%,
+                rgba(101, 0, 33, 0.03) 50%,
+                rgba(120, 0, 20, 0.025) 75%,
+                rgba(139, 0, 0, 0.03) 100%
+            );
+            filter: blur(200px);
+            animation: spinGradient 140s linear infinite;
+        }
+
+        #title-gradient-overlay-2 {
+            opacity: 0.04;
+            background: conic-gradient(
+                from 180deg,
+                rgba(101, 0, 33, 0.025) 0%,
+                rgba(120, 0, 20, 0.03) 25%,
+                rgba(139, 0, 0, 0.025) 50%,
+                rgba(128, 0, 32, 0.03) 75%,
+                rgba(101, 0, 33, 0.025) 100%
+            );
+            filter: blur(220px);
+            animation: spinGradientCounter 180s linear infinite;
+        }
+
+        #title-gradient-overlay-3 {
+            opacity: 0.035;
+            background: conic-gradient(
+                from 90deg,
+                rgba(184, 230, 255, 0.02) 0%,
+                rgba(255, 228, 225, 0.018) 20%,
+                rgba(255, 245, 230, 0.02) 40%,
+                rgba(212, 241, 244, 0.018) 60%,
+                rgba(184, 230, 255, 0.02) 80%,
+                rgba(255, 228, 225, 0.018) 100%
+            );
+            filter: blur(180px);
+            animation: spinGradient 200s linear infinite;
+        }
+
+        #title-gradient-overlay-4 {
+            opacity: 0.03;
+            background: radial-gradient(
+                circle at 30% 50%,
+                rgba(139, 0, 0, 0.025) 0%,
+                rgba(128, 0, 32, 0.02) 30%,
+                transparent 60%
+            );
+            filter: blur(250px);
+            animation: pulseGradient 8s ease-in-out infinite;
+        }
+
+        #title-gradient-overlay-5 {
+            opacity: 0.025;
+            background: conic-gradient(
+                from 270deg,
+                rgba(101, 0, 33, 0.02) 0%,
+                rgba(120, 0, 20, 0.018) 33%,
+                rgba(139, 0, 0, 0.02) 66%,
+                rgba(128, 0, 32, 0.018) 100%
+            );
+            filter: blur(240px);
+            animation: spinGradientCounter 220s linear infinite;
+        }
+
+        @keyframes spinGradient {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spinGradientCounter {
+            from {
+                transform: rotate(360deg);
+            }
+            to {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes pulseGradient {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.03;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.04;
+            }
+        }
+
+        #menu-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-top: 10px;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .menu-item {
+            position: relative;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            text-transform: lowercase;
+            color: #000;
+            cursor: pointer;
+            padding: 8px 0;
+            text-decoration: none;
+        }
+
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #000;
+            transition: width 0.3s ease;
+        }
+
+        .menu-item:hover::after {
+            width: 100%;
+        }
+
+        .menu-item-tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #000;
+            color: #7fff00;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+        }
+
+        .menu-item:hover .menu-item-tooltip {
             opacity: 1;
         }
 
-        #global-fairy-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            display: flex !important;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-        }
-
-        #global-fairy-background .fairy-container {
+        .copy-button {
             position: relative;
-            display: inline-block !important;
-            opacity: 0.4;
-            mix-blend-mode: multiply;
-        }
-
-        #global-fairy-background .fairy-art {
-            font-family: 'Courier New', monospace;
-            font-size: 8px;
-            line-height: 1;
-            white-space: pre;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            text-transform: lowercase;
             color: #000;
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-        }
-
-        #global-fairy-background .fairy-gradient {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 400%;
-            height: 400%;
-            background: conic-gradient(
-                from 0deg,
-                #ff6b35 0%,
-                #ff7a45 10%,
-                #fbbf24 20%,
-                #f9d371 30%,
-                #7fff00 40%,
-                #8fff33 50%,
-                #7df9ff 60%,
-                #8dfaff 70%,
-                #667eea 80%,
-                #6f7feb 90%,
-                #764ba2 100%,
-                #8a5fb8 110%,
-                #ff6b35 120%
-            );
-            background-size: 200% 200%;
-            animation: swirlGradient 10s linear infinite;
-            mix-blend-mode: overlay;
-            opacity: 0.12;
-            filter: blur(40px);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        #content > * {
-            pointer-events: auto;
-        }
-
-        h1 {
-            font-family: 'Merriweather', serif;
-            font-size: 4rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #FFE5E5 0%, #FFD4E5 25%, #E5F4FF 50%, #D4E5FF 75%, #FFE5F4 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            background-size: 200% 200%;
-            animation: gradientShift 8s ease infinite;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 4px rgba(255, 212, 229, 0.2));
-            position: relative;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .subtitle {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            color: #333333;
-            font-weight: 300;
-            animation: fadeInUp 1s ease 0.5s both;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .description {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin-bottom: 2rem;
-            color: #222222;
-            line-height: 1.6;
-            animation: fadeInUp 1s ease 0.7s both;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            animation: fadeInUp 1s ease 0.9s both;
-        }
-
-        .btn {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            padding: 0.75rem 2rem;
-            font-size: 1rem;
-            border: 2px solid #000000;
-            background: transparent;
-            color: #000000;
+            cursor: pointer;
+            padding: 8px 0;
+            background: none;
+            border: none;
             text-decoration: none;
-            transition: all 0.3s ease;
         }
 
-        .btn:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary {
-            background: transparent;
-            color: #000000;
-            border: 2px solid #000000;
-        }
-
-        .btn-primary:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-
-
-
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent; /* Transparent so global fairy shows through */
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 2s ease-in-out;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        #loading-screen.hidden {
-            opacity: 0;
-            z-index: -1;
-            pointer-events: none;
-            display: none !important;
-        }
-
-        .fairy-art {
-            font-family: 'Courier New', monospace;
-            font-size: 8px;
-            line-height: 1;
-            white-space: pre;
-            color: #000;
-            position: relative;
-            z-index: 2;
-            text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-            mix-blend-mode: multiply;
-            opacity: 0.4;
-        }
-
-        @keyframes fadeInFairy {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes dissolveFairy {
-            from { opacity: 1; }
-            to { opacity: 0.4; }
-        }
-
-        .loading-title {
+        .copy-button::after {
+            content: '';
             position: absolute;
-            top: 20px;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #000;
+            transition: width 0.3s ease;
+        }
+
+        .copy-button:hover::after {
+            width: 100%;
+        }
+
+        .copy-button.copied::after {
+            width: 100%;
+            background: #7fff00;
+        }
+
+        .copy-button-tooltip {
+            position: absolute;
+            top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            font-family: 'Avenir Next Ultra Light', 'Avenir Ultra Light', 'Avenir Next', 'Avenir', sans-serif;
-            font-size: 24px;
-            font-weight: 200;
-            color: #000;
-            z-index: 3;
-            text-shadow: 0 0 4px rgba(127, 255, 0, 0.6);
-            opacity: 0.9;
-            letter-spacing: 2px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #000;
+            color: #7fff00;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
         }
 
+        .copy-button:hover .copy-button-tooltip {
+            opacity: 1;
+        }
 
-        .fairy-gradient {
-            position: absolute;
-            top: 0;
+        #scrolling-about {
+            position: fixed;
+            top: 140px;
             left: 0;
-            width: 400%;
-            height: 400%;
-            background: conic-gradient(
-                from 0deg,
-                #ff6b35 0%,
-                #ff7a45 10%,
-                #fbbf24 20%,
-                #f9d371 30%,
-                #7fff00 40%,
-                #8fff33 50%,
-                #7df9ff 60%,
-                #8dfaff 70%,
-                #667eea 80%,
-                #6f7feb 90%,
-                #764ba2 100%,
-                #8a5fb8 110%,
-                #ff6b35 120%
-            );
-            background-size: 200% 200%;
-            animation: swirlGradient 10s linear infinite;
-            mix-blend-mode: overlay;
-            opacity: 0.15;
-            filter: blur(40px);
-            z-index: 1;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            color: #000;
+            z-index: 5;
             pointer-events: none;
         }
 
-        @keyframes swirlGradient {
-            0% {
-                background-position: 0% 0%;
-                transform: translate(-25%, -25%) rotate(0deg);
-            }
-            50% {
-                background-position: 100% 100%;
-                transform: translate(-25%, -25%) rotate(180deg);
-            }
-            100% {
-                background-position: 0% 0%;
-                transform: translate(-25%, -25%) rotate(360deg);
-            }
+        #scrolling-about-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scrollText 60s linear infinite;
+            animation-delay: 0s;
         }
 
-        .fairy-container {
-            position: relative;
-            display: inline-block;
+        @keyframes scrollText {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
+            #menu-container {
+                gap: 24px;
             }
-            .subtitle {
-                font-size: 1.2rem;
+
+            .menu-item {
+                font-size: 14px;
             }
-            .description {
-                font-size: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #7fff00;
+            padding: 32px;
+            max-width: 620px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid #000;
+            position: relative;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        @media (max-width: 640px) {
+            .modal-content {
+                padding: 22px;
             }
-            .label {
-                font-size: 0.75rem;
-                padding: 0.4rem 0.8rem;
-            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #000;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            text-transform: lowercase;
+        }
+
+        .modal-description {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #000;
         }
     </style>
 </head>
 <body>
-    <div id="global-fairy-background">
-        <div class="fairy-container">
-            <div class="fairy-gradient"></div>
-            <div class="fairy-art">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⢠⠠⡀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠡⢣⠱⡘⢬⢠⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠐⠀⠀⠀⠀⠀⠀⠀⢀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢑⢕⢍⢎⢪⡘⢜⢰⢠⢀⠐⠀⠀⠀⢀⠀⠀⠀⠀⢀⠀⠀⠀⡀⠄⠀⠀⠄⠀⠀⢀⠀⠄⠀⠀⢀⠠⠀⠀⠠⠀⠂⠄⠀⠀⢀⠀⠈⠀⠂⠠⠀⠀⠀⠀⠐⠀⡀⠄⠀⠀⠄⠂⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠐⠀⠁⠀⠀⠀⠑⢕⢜⢜⡜⡜⡔⡑⢕⠢⡢⡀⡀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⡀⠈⡀⠀⠀⠠⠀⠀⠠⠀⠄⠠⠀⠀⠀⠀⠠⠀⠄⠀⢀⠀⠀⠀⠂⠀⠀⠈⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠂⠀⠀⠂⠀⠀⠂⠀⠀⠂⠀⠀⠂⠀⠀⠂
-⠀⠀⠀⠀⠀⠀⠀⠀⠱⡱⣱⢕⡇⡧⡙⢔⢅⢂⢂⠒⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⡐⠁⠀⠀⠀⠅⢈⠀⠠⠊⠀⢀⠀⠂⠀⠀⠀⠂⠐⠀⠠⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⢪⢎⢗⢵⢱⢨⠢⠡⡑⠔⡐⡈⠌⠨⡠⢀⠀⠀⠀⠀⠄⠀⠀⠀⠈⠄⠄⠀⠀⠀⠀⠂⠄⢀⠀⠠⠀⡀⠌⢀⠈⠐⢄⠑⠄⢁⢐⠄⠂⢀⠈⠠⠈⠀⠅⠈⠠⠀⠂⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠨⡪⡲⡑⡥⢕⠨⢂⠂⢅⠂⡂⡊⢌⢂⠅⢂⠄⠀⠠⠐⠀⠀⠀⠀⠀⠀⠐⠈⡈⠄⢀⠀⠀⠨⢀⢐⠐⡐⢀⢂⠐⡀⠌⡢⠈⡐⣐⢕⢔⢌⢆⡒⢔⠔⣀⢀⠨⡀⠀⠐⠠⠈⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⢀⠀⠀⠀⠀⠀⠀⠂⠁⠀⢇⢎⢎⠪⡊⢜⠰⡑⠄⠅⢂⠈⡂⠢⢊⢐⠨⢐⠀⡀⠀⠀⠀⢀⠀⠀⠀⡁⠀⠐⠀⠄⠀⢈⠐⡐⠨⠨⢀⠂⡂⠢⡑⡌⢆⢪⡪⡚⢸⢸⢸⢸⢨⠪⡐⣕⢑⠔⡌⠠⠡⢑⠨⠠⠁⠀⠀⠀⢀⠁⠀⠀⠐⠀⠈⠀⠀⠀⠠⠀⠀⠠⠀⠀⠠⠀⠀⠠⠀⠀
-⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠈⢆⢇⢕⢜⢜⠨⡂⢍⠪⡐⡐⠠⠁⢅⠢⡈⡢⠡⡠⠀⠀⠀⠀⠀⠀⠀⠄⢈⠠⠁⠌⡐⠀⢄⠈⠌⡈⡢⡐⢬⢺⢸⢸⡸⡨⣐⡄⡇⢅⢢⠳⡝⢧⢢⢃⠢⡑⠌⡊⢌⠀⡈⠄⢀⠂⢀⠁⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢕⢕⢔⢌⢎⡪⡪⡢⡃⢌⠢⡈⠌⡀⠂⡒⠄⠅⠂⠅⢅⢀⠀⠀⠀⡈⠠⠠⠀⠂⠁⠄⢅⠂⢄⢂⢆⢢⢪⢪⢳⢡⢊⢇⡃⡱⣹⢸⠨⡊⢎⢞⣜⠌⠪⡪⡢⡘⡜⢠⢊⢐⠐⡀⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⢀⠀⠀⢀⠀⠀⠀⠀⠀⢸⢔⢕⢱⠱⡑⢕⠡⠣⡑⡑⢔⠡⠀⢂⠠⠑⡈⠠⠁⡂⡑⢄⠀⠀⡀⠂⠄⠡⠨⢂⠣⡑⢥⠱⡐⡌⡎⡗⡵⡹⡵⡱⣜⢽⡹⡐⡱⡵⣜⢮⣪⡪⡪⡮⣐⢵⢱⢨⢪⠐⢔⠡⠠⠀⠂⠡⠁⠠⠀⠄⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠄⠀⢀⠀⠀⠀⠀⠀⠁⠀⢘⡎⡆⡇⢕⠨⡂⠕⡁⡂⡂⠢⢑⠑⢄⠐⡈⠄⡀⠁⠄⡀⢂⠑⢄⠀⠌⠀⠅⢐⠐⢐⠠⡑⢌⢊⢎⡮⣧⡳⡵⡯⡯⣏⢕⡬⣲⢽⣙⢎⢯⢺⡪⢯⢚⠝⠜⠌⡒⡅⡁⠢⡡⠨⠐⠀⠀⠂⠁⠁⠀⠀⠀⠀⠀⠐⠈⠀⠀⠀⠂⠈⠀⠀⠀⠀⠠⠀⠀
-⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠐⢕⢵⢱⢁⠢⡈⡂⢆⢂⠊⢌⠐⡈⠀⠅⢂⠡⠀⠐⠀⠐⠠⢈⠢⡂⠌⠐⠈⡀⠐⡀⢂⠎⡎⣎⡞⣞⡵⡏⡎⡎⢯⢯⢗⡯⡏⡗⡞⠮⡪⡑⡘⠐⡐⠌⡪⢸⢺⢸⢠⠁⡂⢁⠀⠁⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⢁⠣⡣⡑⠔⡐⠌⡂⡢⢈⠐⢐⠀⠅⢈⠠⠈⠌⢄⠂⠁⠌⠠⢊⠌⡆⡁⠄⢐⢀⠂⡂⢑⡱⡕⡯⣺⣝⣯⢂⢏⢮⢏⢧⢓⠕⡑⠌⢆⢄⠄⠐⡀⠂⠡⠂⡕⣇⢗⢥⢑⢐⠐⠨⠀⡀⠀⠀⠀⠀⠀⠀⠠⠐⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⢀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠌⡂⠕⡱⠰⡁⡊⡐⡐⡡⡀⠁⠄⠠⠈⡨⠐⢌⢌⢐⠨⠐⢌⢪⠢⡐⢀⢂⠂⡬⡢⡺⡪⡯⣺⣺⣺⣕⣕⢝⡜⠜⢄⠱⣐⢈⢀⠂⠅⡁⠠⢈⠨⢐⢸⣳⢱⡑⠅⠐⢈⠠⠀⠀⠂⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⡀⠀
-⠀⠀⠀⠀⠀⠀⠀⠄⠂⠀⠈⠀⠀⠀⠠⠡⡂⢕⠨⡐⠨⡐⠔⢌⢐⠠⡈⠄⢂⠐⠈⠄⠱⡐⠨⢌⠢⡡⡑⡆⡢⡐⢜⢜⢘⢮⡫⣳⢯⡺⣺⣺⣺⢸⢨⢑⠡⠈⠌⡑⠡⠈⠄⢐⠌⡂⢍⢊⣞⣮⢳⠌⡊⠄⠠⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠄⠀⠀⠀⠀⠀⠠⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠠⢑⠨⠐⡐⠀⠅⠐⡈⠠⠀⡂⢈⠈⡐⠨⠠⢁⠐⡨⢨⠨⢚⢜⢜⡜⡼⡘⡌⡪⣜⢮⣻⣺⣳⡹⣕⣗⢧⢣⢑⠐⡈⠈⠄⠂⡈⠄⠂⢅⠱⢪⣪⢟⢾⢸⠱⡑⠨⠠⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⡀⠀⠀⠂⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠪⠨⡐⠠⡁⠈⠄⢐⠈⠠⠀⠂⠠⠀⠌⢈⢐⢐⢐⠠⠱⣐⢱⢱⢳⡹⣆⢇⢧⢳⡹⡮⣺⡪⣞⢮⢺⢵⢱⢁⢂⠐⢈⠀⠄⢂⠄⢕⠐⢌⡲⣝⡇⡏⣪⠣⡊⠄⡑⠀⠀⠀⡀⠀⠀⢀⠀⠀⠀⠀⠀⠀⡀⠁⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠄⠀⠂⠁⠀⠁⠄⠀⠀⠀⠀⢁⠣⡈⠢⢐⠀⠂⢄⠈⡀⠡⢈⠠⡈⡐⡀⡂⠔⡐⡡⠡⡂⡧⡳⣹⡪⡷⣕⡽⣕⢽⢝⣜⢮⡗⡗⡭⣳⢱⢱⣐⢀⠂⡈⡂⠆⠌⢄⡼⡼⣝⡜⣞⠔⡕⢅⠂⠔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⡀⠄⠁⠀⠀⠀⠊⠌⡢⢁⠁⢁⠐⠀⡁⠄⠂⠠⢈⢐⠨⡈⡢⠪⡪⡊⡎⡮⡳⡽⣽⡺⣜⢮⣫⣛⢞⢝⢜⠎⡎⢮⠪⣒⢮⣖⣄⣂⣔⢵⣫⡯⣯⣟⢮⢺⠸⡘⡜⠐⠀⠂⠀⠈⠀⠀⠀⠠⠀⠀⠀⠠⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⡀⠄⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠈⠀⠀⠠⠀⠂⠐⡈⠠⢀⠂⠄⠂⠨⠐⠠⢂⢢⠪⡰⠱⡰⡪⡪⢮⢮⣟⣞⢮⢃⠃⡂⢘⠸⢸⢐⢱⠸⡘⢌⢮⢳⡣⣗⣽⣪⢿⡵⣯⡳⣯⡳⡝⡕⡅⡣⡁⠀⡀⠁⠐⠀⠀⠀⠀⠀⠀⠀⠀⠂⠠⠀⠀⠀⠀⠈⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠈⠀⠄⠀⢀⠀⠀⠠⠐⠀⠀⠀⠀⠀⠀⠁⠁⠊⠐⠅⠥⡑⡡⡑⡠⣃⢌⣎⢦⢵⢽⢽⡳⡳⡣⠑⡀⠂⠠⠐⢈⠐⢱⢑⢑⠅⡱⡑⢔⢑⠱⡱⡫⣯⡻⡮⡯⣺⣪⠣⡑⢕⢅⢂⠁⢀⠀⠀⠀⠀⠀⠐⠀⠀⠐⠀⠁⠄⠐⠀⠁⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠂⠀⠀⡀⠀⠀⠂⠁⠀⠀⠠⠀⡐⣀⢅⢴⡸⣜⡞⡮⣗⢯⢯⢯⢯⡳⡹⡘⠠⠁⠄⢈⠀⠂⡐⠈⠄⡣⠂⠅⡢⢈⠂⢅⠑⠌⢜⢸⡺⣝⢮⡳⡱⣑⠨⡂⡢⠁⡊⠄⡠⠀⠁⠀⠀⠀⠀⡁⠀⠀⠀⠠⠀⠀⠄⠂⠠⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠠⠀⠀⠀⠠⠀⢀⢄⠬⡢⢣⢣⠣⡋⡇⡫⠪⡸⡜⡎⡯⡾⣽⡳⡽⣘⠨⠠⠁⠌⡀⠄⢁⠠⢈⠐⡨⡊⡐⢀⠂⠌⡐⢨⠨⢂⠢⢯⢯⡳⡝⡜⡔⢕⡑⢄⠐⠀⠀⡂⡀⠂⠀⠀⠈⠀⠀⠂⠀⠀⠂⠀⠅⠂⠈⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠁⠀⠀⠁⠀⠀⠐⠠⠡⠀⠀⠄⡂⡊⡢⡱⢑⠅⢕⠡⢃⠪⡐⡕⡍⢇⢕⢽⢽⢝⡾⣝⡎⡆⠌⠄⠅⠂⠄⠂⠄⡠⢂⠆⡆⡣⣂⠂⠌⠐⡐⡐⢅⠢⢑⢝⡵⡫⣎⢎⢪⢢⢑⢑⠌⠄⠂⢂⠄⠠⠀⠀⡀⠀⠈⠈⠄⠐⡈⢈⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠁⠀⠀⠀⠀⠀⠀⠡⠐⢐⢀⠈⡀⢀⢆⢇⢕⢜⢌⠌⡢⢑⠡⡨⣐⠬⡊⢎⢌⢪⢺⢪⡪⡫⣞⣕⢇⢣⢑⠨⡨⢨⠰⡑⡕⡸⡐⡕⡪⢪⢸⠨⡨⢐⢀⢇⠥⡱⡐⡕⢽⣱⡣⡏⡎⡆⠕⡔⡡⢑⠁⡐⠀⠀⠀⡀⠀⠀⠀⠀⠁⠄⠀⠀⠀⠀⡀⠐⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀
-⠠⠀⠀⠀⠀⠀⠂⠀⠀⠀⠈⠄⠂⠅⡐⠀⢀⢢⠱⡐⢅⢂⠆⡢⢑⠰⡘⠌⢌⢆⢆⢗⢝⡜⣎⢯⣺⢜⢜⠰⡐⡕⡎⡇⡇⡣⡊⡢⡱⢌⠢⡅⢕⢱⢌⢂⢪⡪⡮⡪⣪⢪⢪⢲⢕⢕⢕⢕⠕⢌⠆⡂⠅⠄⠀⠀⠁⢀⠐⠀⠀⠂⠀⠄⠠⠐⢀⠁⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠠
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠂⢐⢅⠣⡪⡢⡡⠨⡠⡑⠡⡁⠅⠕⡡⢱⢱⢱⢝⢜⢵⡳⡱⡡⣣⢣⢣⡳⣱⢹⢨⠢⡪⡪⢸⠨⢈⢂⠪⡱⡡⡓⡜⡵⡝⡜⡜⢜⢎⢮⢣⢣⠣⢅⢣⢑⠨⠈⠄⠀⠁⠀⠀⠐⠈⢀⠀⠂⢐⠐⠈⠀⡀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⡀⠄⠈⠀⠀⠠⠀⠀⢈⠢⡑⢅⢊⢐⠨⡐⠢⠨⠨⠠⠡⡡⢊⠎⡊⡮⠢⡱⣳⢽⡪⡯⣪⢳⢱⢕⢕⢇⠕⡕⡕⡑⡌⡢⠁⠄⠡⠨⢸⢸⢸⣸⢱⠸⡘⢌⠪⡊⢎⠆⡝⢌⠂⡂⡂⠈⠠⠈⢀⠀⠈⠀⠅⠄⢀⠂⠀⠀⡀⠀⠀⠀⠀⢀⠐⡈⡠⠀⠀⠠⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠂⠁⢀⢇⠪⢐⢀⢂⠊⢄⠡⠡⠡⡑⡑⢌⢂⠊⠈⡎⡎⡮⡳⣫⢎⢇⢇⢕⢎⢾⢝⡎⣞⢜⢜⢜⢐⠌⠌⢌⠌⠌⢂⠐⠠⠐⡈⠌⡈⡂⢣⠡⡣⢑⠌⡢⠡⢀⠂⠄⠀⠌⢀⠀⠂⠁⢀⠁⡂⠀⠈⠀⠀⠂⠀⠈⠀⠀⠐⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠀⠨⢈⠀⠀⠄⠀⢀⠀⡕⡑⠅⡂⢅⠊⠄⡪⠨⡐⡐⠌⠀⠄⠠⠡⡪⡪⠪⣪⡳⡝⣜⢕⢕⢵⣫⣳⡹⣎⢎⣞⢧⡱⢘⠨⠀⡐⢀⠂⠨⠠⡡⡂⠅⢂⠂⡑⠨⠈⡂⠌⠂⠡⢀⠂⡈⢐⠀⠄⠂⠀⠂⢀⠀⡂⢀⠁⠀⠁⠀⠀⠀⠈⠄⠈⠀⡀⠀⠀⠀⠀⠀⠀
-⠀⠀⢀⠀⠀⠈⠀⠀⠀⠐⠀⡐⠈⠀⠀⢀⢕⠌⡢⠨⡐⡨⢪⡘⡌⠊⠀⠀⠄⠅⠕⡑⠕⡑⢕⢕⢧⡫⣎⢎⢮⡳⣵⡳⡽⣝⣞⣞⡵⠨⢐⠄⡁⡐⠠⠈⢄⠇⢂⠐⠈⡀⠄⢀⠂⢁⢀⢂⠁⠅⠂⠐⡀⠄⠂⠠⠈⠄⢁⠂⡐⠀⠄⠀⠈⠀⠀⡀⢈⠀⠠⠁⠅⠀⠀⠀⠀⠀⠀⠀
-⠀⠁⠀⠀⠀⠀⠂⠐⠠⠀⠐⡀⠈⠀⠀⡐⢅⠪⡐⢕⢌⠎⠂⠐⠀⠈⠔⠀⠨⠨⠐⠨⢂⠨⢪⡫⣞⢜⢮⡪⡇⡧⣳⢽⢺⢵⣳⣳⠡⢸⢂⢂⠆⢂⠅⣊⠢⢁⠂⠄⡁⠄⡐⡠⢬⢒⢌⠢⠩⢊⠨⠀⠄⠠⠈⡀⠅⠐⠀⡂⢂⠁⠄⠈⠄⠈⠀⠀⠀⡂⠀⠄⠀⠀⠀⠀⠀⡀⠄⠈
-⠀⠀⠀⠀⠀⠀⠀⠁⠄⡑⡀⠠⠠⢁⠀⢌⠢⡑⠌⠊⠀⠂⠄⠁⠄⠂⠁⠄⠂⠡⢀⠡⢑⢄⢷⢹⢜⣕⢗⢕⢝⢎⢇⣗⢯⣳⣳⣳⢧⢵⡰⣅⡪⡌⡢⡑⢌⢐⠌⣂⠦⡕⡕⢍⠢⢑⠡⠨⠨⡐⢌⠪⡀⢂⠐⡀⠄⢁⢁⠂⠠⠐⠀⡈⠀⠀⠂⡁⢀⠂⠈⠀⠀⠀⠀⠀⠁⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠡⠀⠀⡢⡑⠌⠀⠈⠀⠠⠐⢈⠀⠈⢂⠅⠀⠄⠂⠄⢂⡳⡝⣕⢗⢕⢱⢱⡱⣱⢝⡮⣟⣞⣾⣺⢯⢯⢟⡮⣟⢮⣳⢬⡢⡳⡹⡪⡣⡣⣊⠢⡊⡐⠨⡈⡂⡂⡢⠱⡌⠄⡂⠄⢂⠐⡐⠈⡀⡪⢐⠀⠂⢁⠀⡂⠂⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⢀⠀⡀⡀⢈⠐⠀⢌⠢⠂⠀⠈⡈⡐⠠⠠⠐⡀⢡⢀⠪⡐⠀⠨⠐⡔⡕⡕⢕⢜⢜⢮⢳⢝⢮⢯⣟⢾⣳⣳⡫⡏⣗⡽⣎⢯⢫⢎⡇⡇⡇⡏⢜⢜⡜⣆⠣⡂⡊⢌⠔⡐⢔⢐⠡⢣⢃⠢⡈⠄⢂⢂⠡⢀⢂⠁⠄⠁⢂⠂⠐⠀⠂⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠐⠀⠀⠄⠀⠂⠈⠨⡠⠁⠀⡀⠂⠀⠂⠅⡂⡡⠂⠀⠡⢑⠀⡐⠨⢸⢸⢘⢌⠎⡎⣎⢮⡺⡽⡹⡕⡕⣕⢧⢣⢫⢺⠸⣚⢜⢜⢜⡜⣎⢮⢪⢪⡪⡣⡎⡆⣇⠪⡐⣁⠢⠡⠡⡢⢑⠱⣑⢑⠔⡈⡐⡐⠄⡁⠄⠂⠠⠁⠄⡀⠂⠁⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⠨⠀⠈⢀⠠⠀⠐⠀⠁⠠⠐⠡⡈⡀⢂⠅⠠⢡⢣⠣⡊⡎⡞⡪⡪⣇⢏⢎⢎⠪⡊⡮⡣⡣⡣⡣⡣⡣⡊⢆⡣⡣⣫⡪⡮⡪⡞⣎⢗⢝⡜⡜⡔⢔⢐⠅⢕⠱⡨⠢⡑⠥⡑⡌⢆⠢⠈⠄⡐⠈⠄⡁⠈⠀⡀⠄⠀⠀⠠⠐⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠠⠀⠀⠀⠂⠀⠀⠂⠀⠈⢄⠃⠀⠄⠐⠀⠄⠁⠀⠂⡑⠄⢈⠐⡐⠠⢂⠊⢌⡢⡣⢣⢣⢣⢣⢣⢏⢖⢑⢌⢢⢑⠜⡜⡌⡆⡇⡇⡪⡨⡪⡪⡺⣪⡺⣜⢞⣝⢮⢯⢇⢇⡓⢌⠢⡑⠍⡂⢅⢇⠣⡊⢎⢎⢌⠢⠣⡁⢂⠢⠁⡁⠠⠈⡀⠄⡐⠀⠁⠀⠠⠐⠀⠀⠀⠀⠀⠁⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⡀⠄⠕⠁⠀⠁⠄⠀⠠⠈⢀⠁⢀⠐⡀⠄⠂⢨⠈⠔⢌⢢⢣⢕⢅⠣⡱⡱⡕⢕⠢⡑⡐⢕⢔⢱⠡⡣⡃⡇⢕⢔⢕⢅⢇⢯⡳⣕⢗⡽⣞⡽⡝⡕⡱⡨⠢⡑⢌⠆⢌⠢⡢⣃⢪⠰⡱⡐⢅⠣⡑⠔⠐⡀⠄⠀⢂⠢⡁⠂⠀⡀⠈⢀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠠⠀⠐⠀⠐⠀⠀⡀⠐⡀⢂⠈⢀⠂⠄⡈⠄⢀⠢⡢⡡⢂⢂⠡⡱⣱⢱⢸⠰⡑⢜⢜⢜⠸⡨⡂⡣⡱⡐⢕⢱⢑⢜⢜⡜⡜⡔⣕⢝⡽⣺⢵⢯⡯⣗⢯⢳⢱⢑⠕⡑⡌⡢⢑⢐⠅⡣⡊⡆⡣⠪⡸⡐⡑⢌⢊⢆⠠⠡⡁⡂⠅⠀⠂⠀⢂⠈⠀⠀⠀⠀⠀⠀⠠⠀⠀
-⠀⠐⠀⠀⠠⠀⠂⠁⠀⠀⠂⠀⠀⠀⠄⠂⠰⠀⠅⠠⢑⠠⡣⢣⢊⢢⢱⠠⢣⢇⢇⢇⢇⢇⢇⢎⢆⢣⠱⡌⡆⢎⢜⢜⢜⣜⢎⢧⢣⢣⡳⣕⢯⣫⢏⣯⢯⡯⡯⡪⡎⡪⡰⢡⢃⠕⢄⢑⠄⢕⢱⢱⢘⠜⡌⡎⡆⢕⠡⡂⠆⢅⠅⡊⡐⠀⠌⠠⠡⠠⢀⠀⠀⠀⠀⠀⡀⠀⠀⠀
-⠀⠀⡀⠠⠀⠀⡀⠀⠀⠐⠀⠂⠀⠠⠐⢈⠨⡈⢌⠨⠠⢑⢜⠰⡡⡑⢔⢕⢕⢯⡪⡎⡎⡎⡎⡎⡎⡎⡎⡊⢎⢜⢜⢎⢮⢳⡱⣕⢯⢾⢵⣻⢮⣻⢾⢽⣝⢎⢮⢊⠢⡣⡑⢆⢑⠔⠡⠨⡐⡱⡡⢕⢜⢸⢸⢸⢘⢌⢌⠪⡐⡐⡀⠂⠁⠀⠂⠠⠀⡀⠀⠁⠠⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠠⠀⠠⠐⠀⠂⡂⢕⠠⠑⠄⠕⡕⡌⢎⡆⡇⡇⣟⢎⢎⢎⢎⢎⢎⢎⢎⢎⡇⡇⡧⡳⣹⡱⣝⢞⣞⡽⣝⡯⣳⣻⡺⡽⣝⢎⢇⢇⠕⢅⢇⢕⢡⢑⢌⠪⢐⢌⠢⡣⡣⡱⢱⢱⢱⢱⢱⢂⢇⢂⢂⢂⠂⡈⢀⠠⠈⡐⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠂⠀⠀⠀⠀⠀⠀⠄⠄⡂⠢⠨⠠⢂⢈⠐⡐⢔⠡⡁⠪⠨⡘⡜⢼⡪⡇⡇⡇⡣⡪⣪⢪⢪⢪⡪⣪⡪⣪⢺⡸⡪⣝⠜⣪⢗⣯⢷⢯⣗⢯⡺⣪⢾⡹⡪⡪⡣⢣⢱⢱⠱⡡⡑⡌⡢⢑⢐⠔⡡⢱⢱⢱⢱⠱⡱⡱⣑⢢⢑⢢⢂⠐⡈⠄⠀⠀⠀⡀⠁⠄⠀⠀⠀⠀⠀⠀⠀⡀
-⠀⠀⠀⠀⠀⠀⠀⠈⠀⠁⡂⠅⠅⠕⡐⠄⢅⠢⡂⠅⢅⢇⢕⢱⢨⢢⢪⠮⡎⡎⣆⢯⣪⢺⢜⡜⣜⢴⢹⣪⣣⡳⣝⢜⡢⣗⢯⡺⣽⢳⡣⣗⢝⢮⡣⡣⡣⡣⡣⡣⡳⡱⡑⢌⢢⠱⡈⡢⢂⢊⠔⡡⢱⢵⢱⢑⢕⢕⢕⡅⢇⠆⡢⠡⡐⠨⡀⠁⠀⠀⠀⠀⠀⠀⠀⡀⠀⠂⠀⠀
-⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠈⠈⠀⠠⠐⠀⠅⠨⠨⢐⢑⠥⡑⡌⡪⡪⣝⢵⢳⢱⢕⠕⢅⢇⢗⢵⡫⡧⡳⣕⣗⢵⣣⢺⣰⡳⣝⣗⢽⡪⡗⣝⢕⢕⢕⠜⡌⣲⢝⢎⢎⢌⠢⡣⠣⡑⠌⡂⠢⠡⡊⡆⣗⢕⢕⠕⡕⢕⢕⢕⢅⠂⠅⠄⠅⢂⠁⢂⠀⠀⡀⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠂⠀⠌⠐⠀⡁⠈⡀⠌⡐⢔⠬⡸⡸⡸⡪⡪⡪⣣⡫⡣⢃⠕⡸⡱⡳⡙⢮⡫⣞⢮⢏⠾⡵⡳⡝⡮⣗⢽⣪⡳⣣⢣⢣⢱⢑⣕⢗⡕⡇⡣⠢⡱⡑⢕⠅⢕⠨⡘⢌⢢⢯⢎⡎⡆⡇⡣⢱⢑⠕⢌⠪⡠⠁⢂⠀⠐⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⡀⠄⢀⢂⠆⡣⡣⢃⠣⡑⢅⠣⡃⡇⡗⣕⢗⡕⠅⡆⡇⡏⣎⢢⢡⢹⡪⡗⡕⡕⡽⡸⣪⡳⡳⣹⢲⢹⢰⢱⢑⢅⢧⢳⢕⢕⢕⢌⠪⡸⡨⢢⢃⠅⡊⢔⢕⢝⢎⢇⡇⡇⡕⢌⠌⡆⠪⢐⠡⢂⠅⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠄⠀⠀⠀⠀⠁⠀⠀⠀⠈⠀⡀⢀⠄⢅⢢⠨⡂⡊⡢⡑⢌⠆⡇⡣⠣⡑⢜⢜⢎⡇⡇⡎⡎⣜⢔⢕⢸⡸⣕⢝⢮⢪⢸⢜⢜⢕⢵⠱⣑⠥⡣⡱⡕⣕⢕⢕⢕⠕⢔⢡⠣⡊⡢⠢⡑⢌⠢⡑⢜⢕⢕⢕⠕⡕⡡⢑⢌⢊⠐⡈⠐⠁⢂⠠⠀⠁⠀⠄⠐⠀⠀⠀⢀⠀⠀⠀⡀
-⠀⠀⠀⠀⠀⠀⢀⠀⠀⠄⠂⠠⠁⠐⠐⠈⠐⠐⠑⠐⡁⡎⡎⡖⡕⣌⢆⢕⢜⡜⡜⡜⣜⢵⡱⣕⢵⢝⢮⣢⡫⡮⡪⣎⢮⢪⢪⢎⢇⢣⢣⢣⢝⢮⢺⢜⢎⢎⡎⡇⢕⢑⢜⢜⢐⠜⢌⠪⢐⠁⡊⢜⢜⢜⠜⠌⡂⡊⠔⠨⢂⢂⠐⠀⠂⠀⠀⠀⠀⠁⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠈⡀⠡⠈⠢⡑⢌⠪⡘⡜⢜⢕⢇⠇⡇⠇⡇⡇⡧⡳⡵⡹⣪⢮⢺⢕⢧⡪⡢⡱⣱⢹⢸⢨⢪⣪⢫⢳⢱⡱⡱⡱⡱⡡⡡⡣⡱⡂⢆⢇⢃⠑⠄⠂⢌⠪⢢⠡⠣⡁⢂⠐⠐⡀⠌⢐⠀⠁⠀⠠⠈⠀⠠⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀
-⠀⠀⠀⠀⢀⠀⠂⠀⠀⠄⠀⠀⡀⠄⠂⠀⢀⠀⠄⠂⠅⡂⠅⠢⡑⢜⠸⡘⡔⣑⢌⢎⢎⡚⡮⢯⢯⢎⢆⢇⢫⣳⢕⡕⡇⡏⡎⡎⣎⢎⢧⢳⡹⣸⢜⢜⢜⢼⠸⡐⡕⡕⡕⢌⢆⢇⠆⢅⠡⠈⠠⢊⢂⠊⢔⠀⢂⠈⠄⠠⠐⠐⢈⠀⠠⢀⠁⡀⠁⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠠
-⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠊⠌⠂⢐⢈⠐⢌⠢⠡⡡⡣⢣⠣⡳⡣⢣⣫⡳⣫⢯⣇⣇⡇⣗⡝⡮⡣⡲⣝⢎⢊⢎⢮⡪⡞⡕⣕⢵⡫⡪⢪⢸⢸⢸⢸⢸⢸⢸⠨⡐⠠⢁⠨⠐⠄⡑⡐⢈⠠⠐⠐⢀⠂⠐⠀⠠⠁⠠⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠈⠀⠠⠐⠈⠄⠂⠡⢂⠑⡑⠌⠌⠢⡃⡕⡮⡳⡵⡝⣞⢗⣗⣗⢯⢞⡮⡳⣹⢽⢐⠅⡢⢱⡓⡵⡹⡸⢸⠸⡜⡌⣎⢎⢎⢎⢎⢎⢎⢎⢪⠠⠡⠀⠄⠨⠐⡀⢊⠠⠐⠈⠠⠀⠂⡁⢀⠂⠂⠀⠄⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠈⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠂⠀⠄⠀⠈⠀⠂⠡⡈⠠⠀⠀⠄⢂⢁⠢⡑⡅⡇⡇⡏⢎⢗⢇⢗⢝⠕⢯⡺⡕⡇⡕⢌⢢⠣⡪⡊⡪⠨⠪⣘⢜⠜⡜⡌⡎⣎⢎⢎⠎⡢⡱⠨⠐⠠⠈⡀⠡⠐⡀⢂⢈⠐⢀⠨⠠⢀⢐⠀⡈⠀⡀⠀⠀⠂⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀
-⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠄⠀⢀⠀⠀⠠⠀⠀⠀⠈⠀⢁⠠⠀⠐⠀⢀⢁⠂⠠⡱⡑⡌⠜⠨⠠⡑⢅⠣⡳⡱⡱⡱⣸⢪⢪⢪⢢⢣⢣⠣⢪⢸⠨⠣⡑⠕⡕⢕⢕⢕⢕⢕⠅⡕⢜⠐⢅⠡⠐⢀⠐⠀⠅⠐⠠⠐⢈⠀⠠⠑⠠⠂⠂⠀⠠⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠂⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⡀⠐⠀⠀⡀⠈⢀⠈⠀⠀⡀⠂⠁⠀⠄⠀⢠⠃⢈⠠⠡⢑⠐⢌⢢⢑⠨⡪⡪⡚⡜⡵⡕⡕⡕⡕⡱⡩⡪⡢⠣⡃⡪⢨⢊⢎⠢⢣⠱⡡⡱⢘⢔⢁⢂⠊⡈⠄⠠⠁⠌⡈⠄⡑⡐⢌⠠⠡⢁⠂⠀⠂⠀⠀⠀⠀⠀⠠⠐⠈⠀⠀⠀⠀⡀⠄⠂
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠄⠀⠀⠀⢀⠁⠀⠀⠀⠀⢈⠀⠀⠁⠀⠠⠠⡑⢅⢑⠔⡡⡡⠱⡐⡅⡣⡪⣪⢳⡱⡑⡎⡎⡪⡸⡘⢌⢪⢐⠕⡡⢂⠕⠡⠊⠌⡊⠪⡊⢆⢂⢂⠂⠌⠠⠈⡀⢂⢂⠐⡨⡐⠨⢀⠀⡀⠁⠀⠂⠀⠂⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠄⢀⠀⠀⠠⠀⠀⢀⠀⠀⠀⠁⠀⠈⠌⡂⠅⡂⡂⡂⠅⡊⡐⢜⢜⢌⢗⡕⡕⢕⠌⠂⠅⠅⡑⢐⠅⢌⠐⡐⠄⠁⠅⠂⠌⠌⣊⠢⡃⢕⠌⡐⢀⠡⠀⠂⡂⡂⠔⠠⠁⠄⠠⠀⡀⠁⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⡁⢂⠡⠐⠀⡂⠅⡂⠪⢐⠡⢃⠣⡣⡑⠅⡂⠄⢅⢂⠐⠐⡈⠐⠀⡂⢁⠈⢈⠀⠡⠨⠐⢅⠪⡐⡑⢄⠂⠐⢈⠀⠂⠢⢁⠡⠈⡀⠂⠁⠀⢈⠀⠀⡀⠐⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠄⠁⠀⢂⠁⠌⠌⠐⠐⠀⠂⢕⠨⠐⡀⠌⠀⡂⠄⠁⡀⠂⠁⠐⡀⠐⡀⠐⠈⠄⠅⡑⠌⡂⡊⡢⠨⢈⠠⢈⠈⠄⡁⠀⠠⠀⠂⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠐⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠠⠐⠀⠀⠀⠄⠈⠀⠂⠁⠀⠄⠀⠀⢈⠀⡁⠈⡀⠅⡂⠐⠀⠄⠀⠄⠐⠀⠠⠐⠈⠄⠐⠀⠐⠀⠌⠠⠁⠄⠡⠐⢐⠨⠨⠐⢈⠔⢈⢐⠀⠅⡀⠀⠐⠈⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⡀⠀⠀⠠⠀⠄⠀⡀⠐⠨⢀⠡⠐⠀⠀⠂⠁⠐⠀⠁⠐⠀⠁⠈⡀⠂⠁⠐⠀⢈⠠⠀⠄⠁⠀⠀⠈⠐⠠⢁⠢⠐⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠂⠀⠀⠁⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠈⠄⠠⠐⠀⠐⠀⠀⠀⠐⠀⠀⠄⠂⠁⠀⠀⠈⠀⠠⠀⠀⠄⠀⠀⠀⠐⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⢀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠐⠀⠁⠀⠀⠄⠀⠀⠡⠐⠀⠀⠀⡀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠄⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠐⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠐⠀⠁⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠐⠈⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠁⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⡀⠀⠐⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠐⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠈⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠈⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</div>
-        </div>
-    </div>
+    <div id="fairy-background"></div>
 
-    <div id="loading-screen">
-        <div class="loading-title">magat fairy</div>
-    </div>
-
-    <div id="canvas-container"></div>
-    
     <div id="content">
-            <h1>magat fairy</h1>
-        <p class="subtitle">MATLAB to H5 Conversion Tool</p>
-        
-        <div class="buttons">
-            <a href="https://github.com/GilRaitses/mat2h5" class="btn btn-primary">View on GitHub</a>
-            <a href="https://github.com/GilRaitses/mat2h5#quick-start" class="btn">Get Started</a>
-            <a href="https://github.com/GilRaitses/mat2h5/blob/main/README.md" class="btn">Documentation</a>
+        <div id="title-container">
+            <canvas id="title-canvas"></canvas>
+            <div id="title-gradient-overlay"></div>
+            <div id="title-gradient-overlay-2"></div>
+            <div id="title-gradient-overlay-3"></div>
+            <div id="title-gradient-overlay-4"></div>
+            <div id="title-gradient-overlay-5"></div>
+            <h1 id="title-text">magat fairy</h1>
         </div>
 
+        <nav id="menu-container">
+            <a href="https://github.com/GilRaitses/mat2h5" class="menu-item" target="_blank">
+                docs
+                <span class="menu-item-tooltip">opens repo about page</span>
+            </a>
+            <button class="copy-button" id="copy-clone-btn">
+                clone
+                <span class="copy-button-tooltip">copies git clone command to clipboard</span>
+            </button>
+        </nav>
+
+        <div id="scrolling-about">
+            <div id="scrolling-about-content">
+                magat fairy transforms MAGAT analyzer data from MATLAB format to HDF5 for Python workflows magat fairy transforms MAGAT analyzer data from MATLAB format to HDF5 for Python workflows
+            </div>
+        </div>
     </div>
 
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+    <!-- Modals -->
+    <div id="modal-convert" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">convert data</h2>
+            <p class="modal-description">
+                Convert MAGAT experiment data from MATLAB structured format into Python-ready H5 files.
+                Drag and drop a data folder (experiment, ESET, or collection); detection and conversion run automatically.
+                Outputs are saved to the exports/ folder in the repository.
+            </p>
+        </div>
+    </div>
 
-        // Loading progress
-        const loadingScreen = document.getElementById('loading-screen');
-        const fairyArt = document.getElementById('fairy-art');
-        const mainFairyArt = document.getElementById('main-fairy-art');
-        
-        // Load fairy ASCII art
-        const fairyASCII = `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⢠⠠⡀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠡⢣⠱⡘⢬⢠⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠐⠀⠀⠀⠀⠀⠀⠀⢀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢑⢕⢍⢎⢪⡘⢜⢰⢠⢀⠐⠀⠀⠀⢀⠀⠀⠀⠀⢀⠀⠀⠀⡀⠄⠀⠀⠄⠀⠀⢀⠀⠄⠀⠀⢀⠠⠀⠀⠠⠀⠂⠄⠀⠀⢀⠀⠈⠀⠂⠠⠀⠀⠀⠀⠐⠀⡀⠄⠀⠀⠄⠂⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠐⠀⠁⠀⠀⠀⠑⢕⢜⢜⡜⡜⡔⡑⢕⠢⡢⡀⡀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⡀⠈⡀⠀⠀⠠⠀⠀⠠⠀⠄⠠⠀⠀⠀⠀⠠⠀⠄⠀⢀⠀⠀⠀⠂⠀⠀⠈⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠂⠀⠀⠂⠀⠀⠂⠀⠀⠂⠀⠀⠂⠀⠀⠂
-⠀⠀⠀⠀⠀⠀⠀⠀⠱⡱⣱⢕⡇⡧⡙⢔⢅⢂⢂⠒⡐⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⡐⠁⠀⠀⠀⠅⢈⠀⠠⠊⠀⢀⠀⠂⠀⠀⠀⠂⠐⠀⠠⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⢪⢎⢗⢵⢱⢨⠢⠡⡑⠔⡐⡈⠌⠨⡠⢀⠀⠀⠀⠀⠄⠀⠀⠀⠈⠄⠄⠀⠀⠀⠀⠂⠄⢀⠀⠠⠀⡀⠌⢀⠈⠐⢄⠑⠄⢁⢐⠄⠂⢀⠈⠠⠈⠀⠅⠈⠠⠀⠂⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠨⡪⡲⡑⡥⢕⠨⢂⠂⢅⠂⡂⡊⢌⢂⠅⢂⠄⠀⠠⠐⠀⠀⠀⠀⠀⠀⠐⠈⡈⠄⢀⠀⠀⠨⢀⢐⠐⡐⢀⢂⠐⡀⠌⡢⠈⡐⣐⢕⢔⢌⢆⡒⢔⠔⣀⢀⠨⡀⠀⠐⠠⠈⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⢀⠀⠀⠀⠀⠀⠀⠂⠁⠀⢇⢎⢎⠪⡊⢜⠰⡑⠄⠅⢂⠈⡂⠢⢊⢐⠨⢐⠀⡀⠀⠀⠀⢀⠀⠀⠀⡁⠀⠐⠀⠄⠀⢈⠐⡐⠨⠨⢀⠂⡂⠢⡑⡌⢆⢪⡪⡚⢸⢸⢸⢸⢨⠪⡐⣕⢑⠔⡌⠠⠡⢑⠨⠠⠁⠀⠀⠀⢀⠁⠀⠀⠐⠀⠈⠀⠀⠀⠠⠀⠀⠠⠀⠀⠠⠀⠀⠠⠀⠀
-⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠈⢆⢇⢕⢜⢜⠨⡂⢍⠪⡐⡐⠠⠁⢅⠢⡈⡢⠡⡠⠀⠀⠀⠀⠀⠀⠀⠄⢈⠠⠁⠌⡐⠀⢄⠈⠌⡈⡢⡐⢬⢺⢸⢸⡸⡨⣐⡄⡇⢅⢢⠳⡝⢧⢢⢃⠢⡑⠌⡊⢌⠀⡈⠄⢀⠂⢀⠁⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢕⢕⢔⢌⢎⡪⡪⡢⡃⢌⠢⡈⠌⡀⠂⡒⠄⠅⠂⠅⢅⢀⠀⠀⠀⡈⠠⠠⠀⠂⠁⠄⢅⠂⢄⢂⢆⢢⢪⢪⢳⢡⢊⢇⡃⡱⣹⢸⠨⡊⢎⢞⣜⠌⠪⡪⡢⡘⡜⢠⢊⢐⠐⡀⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⢀⠀⠀⢀⠀⠀⠀⠀⠀⢸⢔⢕⢱⠱⡑⢕⠡⠣⡑⡑⢔⠡⠀⢂⠠⠑⡈⠠⠁⡂⡑⢄⠀⠀⡀⠂⠄⠡⠨⢂⠣⡑⢥⠱⡐⡌⡎⡗⡵⡹⡵⡱⣜⢽⡹⡐⡱⡵⣜⢮⣪⡪⡪⡮⣐⢵⢱⢨⢪⠐⢔⠡⠠⠀⠂⠡⠁⠠⠀⠄⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠄⠀⢀⠀⠀⠀⠀⠀⠁⠀⢘⡎⡆⡇⢕⠨⡂⠕⡁⡂⡂⠢⢑⠑⢄⠐⡈⠄⡀⠁⠄⡀⢂⠑⢄⠀⠌⠀⠅⢐⠐⢐⠠⡑⢌⢊⢎⡮⣧⡳⡵⡯⡯⣏⢕⡬⣲⢽⣙⢎⢯⢺⡪⢯⢚⠝⠜⠌⡒⡅⡁⠢⡡⠨⠐⠀⠀⠂⠁⠁⠀⠀⠀⠀⠀⠐⠈⠀⠀⠀⠂⠈⠀⠀⠀⠀⠠⠀⠀
-⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠐⢕⢵⢱⢁⠢⡈⡂⢆⢂⠊⢌⠐⡈⠀⠅⢂⠡⠀⠐⠀⠐⠠⢈⠢⡂⠌⠐⠈⡀⠐⡀⢂⠎⡎⣎⡞⣞⡵⡏⡎⡎⢯⢯⢗⡯⡏⡗⡞⠮⡪⡑⡘⠐⡐⠌⡪⢸⢺⢸⢠⠁⡂⢁⠀⠁⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⢁⠣⡣⡑⠔⡐⠌⡂⡢⢈⠐⢐⠀⠅⢈⠠⠈⠌⢄⠂⠁⠌⠠⢊⠌⡆⡁⠄⢐⢀⠂⡂⢑⡱⡕⡯⣺⣝⣯⢂⢏⢮⢏⢧⢓⠕⡑⠌⢆⢄⠄⠐⡀⠂⠡⠂⡕⣇⢗⢥⢑⢐⠐⠨⠀⡀⠀⠀⠀⠀⠀⠀⠠⠐⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⢀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠌⡂⠕⡱⠰⡁⡊⡐⡐⡡⡀⡂⠁⠄⠠⠈⡨⠐⢌⢌⢐⠨⠐⢌⢪⠢⡐⢀⢂⠂⡬⡢⡺⡪⡯⣺⣺⣺⣕⣕⢝⡜⠜⢄⠱⣐⢈⢀⠂⠅⡁⠠⢈⠨⢐⢸⣳⢱⡑⠅⠐⢈⠠⠀⠀⠂⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⡀⠀
-⠀⠀⠀⠀⠀⠀⠀⠄⠂⠀⠈⠀⠀⠀⠠⠡⡂⢕⠨⡐⠨⡐⠔⢌⢐⠠⡈⠄⢂⠐⠈⠄⠱⡐⠨⢌⠢⡡⡑⡆⡢⡐⢜⢜⢘⢮⡫⣳⢯⡺⣺⣺⣺⢸⢨⢑⠡⠈⠌⡑⠡⠈⠄⢐⠌⡂⢍⢊⣞⣮⢳⠌⡊⠄⠠⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠄⠀⠀⠀⠀⠀⠠⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠠⢑⠨⠐⡐⠀⠅⠐⡈⠠⠀⡂⢈⠈⡐⠨⠠⢁⠐⡨⢨⠨⢚⢜⢜⡜⡼⡘⡌⡪⣜⢮⣻⣺⣳⡹⣕⣗⢧⢣⢑⠐⡈⠈⠄⠂⡈⠄⠂⢅⠱⢪⣪⢟⢾⢸⠱⡑⠨⠠⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⡀⠀⠀⠂⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠪⠨⡐⠠⡁⠈⠄⢐⠈⠠⠀⠂⠠⠀⠌⢈⢐⢐⢐⠠⠱⣐⢱⢱⢳⡹⣆⢇⢧⢳⡹⡮⣺⡪⣞⢮⢺⢵⢱⢁⢂⠐⢈⠀⠄⢂⠄⢕⠐⢌⡲⣝⡇⡏⣪⠣⡊⠄⡑⠀⠀⠀⡀⠀⠀⢀⠀⠀⠀⠀⠀⠀⡀⠁⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠄⠀⠂⠁⠀⠁⠄⠀⠀⠀⠀⢁⠣⡈⠢⢐⠀⠂⢄⠈⡀⠡⢈⠠⡈⡐⡀⡂⠔⡐⡡⠡⡂⡧⡳⣹⡪⡷⣕⡽⣕⢽⢝⣜⢮⡗⡗⡭⣳⢱⢱⣐⢀⠂⡈⡂⠆⠌⢄⡼⡼⣝⡜⣞⠔⡕⢅⠂⠔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⡀⠄⠁⠀⠀⠀⠊⠌⡢⢁⠁⢁⠐⠀⡁⠄⠂⠠⢈⢐⠨⡈⡢⠪⡪⡊⡎⡮⡳⡽⣽⡺⣜⢮⣫⣛⢞⢝⢜⠎⡎⢮⠪⣒⢮⣖⣄⣂⣔⢵⣫⡯⣯⣟⢮⢺⠸⡘⡜⠐⠀⠂⠀⠈⠀⠀⠀⠠⠀⠀⠀⠠⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⡀⠄⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠈⠀⠀⠠⠀⠂⠐⡈⠠⢀⠂⠄⠂⠨⠐⠠⢂⢢⠪⡰⠱⡰⡪⡪⢮⢮⣟⣞⢮⢃⠃⡂⢘⠸⢸⢐⢱⠸⡘⢌⢮⢳⡣⣗⣽⣪⢿⡵⣯⡳⣯⡳⡝⡕⡅⡣⡁⠀⡀⠁⠐⠀⠀⠀⠀⠀⠀⠀⠀⠂⠠⠀⠀⠀⠀⠈⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠈⠀⠄⠀⢀⠀⠀⠠⠐⠀⠀⠀⠀⠀⠀⠁⠁⠊⠐⠅⠥⡑⡡⡑⡠⣃⢌⣎⢦⢵⢽⢽⡳⡳⡣⠑⡀⠂⠠⠐⢈⠐⢱⢑⢑⠅⡱⡑⢔⢑⠱⡱⡫⣯⡻⡮⡯⣺⣪⠣⡑⢕⢅⢂⠁⢀⠀⠀⠀⠀⠀⠐⠀⠀⠐⠀⠁⠄⠐⠀⠁⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠂⠀⠀⡀⠀⠀⠂⠁⠀⠀⠠⠀⡐⣀⢅⢴⡸⣜⡞⡮⣗⢯⢯⢯⢯⡳⡹⡘⠠⠁⠄⢈⠀⠂⡐⠈⠄⡣⠂⠅⡢⢈⠂⢅⠑⠌⢜⢸⡺⣝⢮⡳⡱⣑⠨⡂⡢⠁⡊⠄⡠⠀⠁⠀⠀⠀⠀⡁⠀⠀⠀⠠⠀⠀⠄⠂⠠⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡐⠠⠀⠀⠀⠠⠀⢀⢄⠬⡢⢣⢣⠣⡋⡇⡫⠪⡸⡜⡎⡯⡾⣽⡳⡽⣘⠨⠠⠁⠌⡀⠄⢁⠠⢈⠐⡨⡊⡐⢀⠂⠌⡐⢨⠨⢂⠢⢯⢯⡳⡝⡜⡔⢕⡑⢄⠐⠀⠀⡂⡀⠂⠀⠀⠈⠀⠀⠂⠀⠀⠂⠀⠅⠂⠈⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠁⠀⠀⠁⠀⠀⠐⠠⠡⠀⠀⠄⡂⡊⡢⡱⢑⠅⢕⠡⢃⠪⡐⡕⡍⢇⢕⢽⢽⢝⡾⣝⡎⡆⠌⠄⠅⠂⠄⠂⠄⡠⢂⠆⡆⡣⣂⠂⠌⠐⡐⡐⢅⠢⢑⢝⡵⡫⣎⢎⢪⢢⢑⢑⠌⠄⠂⢂⠄⠠⠀⠀⡀⠀⠈⠈⠄⠐⡈⢈⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠁⠀⠀⠀⠀⠀⠀⠡⠐⢐⢀⠈⡀⢀⢆⢇⢕⢜⢌⠌⡢⢑⠡⡨⣐⠬⡊⢎⢌⢪⢺⢪⡪⡫⣞⣕⢇⢣⢑⠨⡨⢨⠰⡑⡕⡸⡐⡕⡪⢪⢸⠨⡨⢐⢀⢇⠥⡱⡐⡕⢽⣱⡣⡏⡎⡆⠕⡔⡡⢑⠁⡐⠀⠀⠀⡀⠀⠀⠀⠀⠁⠄⠀⠀⠀⠀⡀⠐⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀
-⠠⠀⠀⠀⠀⠀⠂⠀⠀⠀⠈⠄⠂⠅⡐⠀⢀⢢⠱⡐⢅⢂⠆⡢⢑⠰⡘⠌⢌⢆⢆⢗⢝⡜⣎⢯⣺⢜⢜⠰⡐⡕⡎⡇⡇⡣⡊⡢⡱⢌⠢⡅⢕⢱⢌⢂⢪⡪⡮⡪⣪⢪⢪⢲⢕⢕⢕⢕⠕⢌⠆⡂⠅⠄⠀⠀⠁⢀⠐⠀⠀⠂⠀⠄⠠⠐⢀⠁⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠠
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠂⢐⢅⠣⡪⡢⡡⠨⡠⡑⠡⡁⠅⠕⡡⢱⢱⢱⢝⢜⢵⡳⡱⡡⣣⢣⢣⡳⣱⢹⢨⠢⡪⡪⢸⠨⢈⢂⠪⡱⡡⡓⡜⡵⡝⡜⡜⢜⢎⢮⢣⢣⠣⢅⢣⢑⠨⠈⠄⠀⠁⠀⠀⠐⠈⢀⠀⠂⢐⠐⠈⠀⡀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⡀⠄⠈⠀⠀⠠⠀⠀⢈⠢⡑⢅⢊⢐⠨⡐⠢⠨⠨⠠⠡⡡⢊⠎⡊⡮⠢⡱⣳⢽⡪⡯⣪⢳⢱⢕⢕⢇⠕⡕⡕⡑⡌⡢⠁⠄⠡⠨⢸⢸⢸⣸⢱⠸⡘⢌⠪⡊⢎⠆⡝⢌⠂⡂⡂⠈⠠⠈⢀⠀⠈⠀⠅⠄⢀⠂⠀⠀⡀⠀⠀⠀⠀⢀⠐⡈⡠⠀⠀⠠⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠂⠁⢀⢇⠪⢐⢀⢂⠊⢄⠡⠡⠡⡑⡑⢌⢂⠊⠈⡎⡎⡮⡳⣫⢎⢇⢇⢕⢎⢾⢝⡎⣞⢜⢜⢜⢐⠌⠌⢌⠌⠌⢂⠐⠠⠐⡈⠌⡈⡂⢣⠡⡣⢑⠌⡢⠡⢀⠂⠄⠀⠌⢀⠀⠂⠁⢀⠁⡂⠀⠈⠀⠀⠂⠀⠈⠀⠀⠐⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠀⠨⢈⠀⠀⠄⠀⢀⠀⡕⡑⠅⡂⢅⠊⠄⡪⠨⡐⡐⠌⠀⠄⠠⠡⡪⡪⠪⣪⡳⡝⣜⢕⢕⢵⣫⣳⡹⣎⢎⣞⢧⡱⢘⠨⠀⡐⢀⠂⠨⠠⡡⡂⠅⢂⠂⡑⠨⠈⡂⠌⠂⠡⢀⠂⡈⢐⠀⠄⠂⠀⠂⢀⠀⡂⢀⠁⠀⠁⠀⠀⠀⠈⠄⠈⠀⡀⠀⠀⠀⠀⠀⠀
-⠀⠀⢀⠀⠀⠈⠀⠀⠀⠐⠀⡐⠈⠀⠀⢀⢕⠌⡢⠨⡐⡨⢪⡘⡌⠊⠀⠀⠄⠅⠕⡑⠕⡑⢕⢕⢧⡫⣎⢎⢮⡳⣵⡳⡽⣝⣞⣞⡵⠨⢐⠄⡁⡐⠠⠈⢄⠇⢂⠐⠈⡀⠄⢀⠂⢁⢀⢂⠁⠅⠂⠐⡀⠄⠂⠠⠈⠄⢁⠂⡐⠀⠄⠀⠈⠀⠀⡀⢈⠀⠠⠁⠅⠀⠀⠀⠀⠀⠀⠀
-⠀⠁⠀⠀⠀⠀⠂⠐⠠⠀⠐⡀⠈⠀⠀⡐⢅⠪⡐⢕⢌⠎⠂⠐⠀⠈⠔⠀⠨⠨⠐⠨⢂⠨⢪⡫⣞⢜⢮⡪⡇⡧⣳⢽⢺⢵⣳⣳⠡⢸⢂⢂⠆⢂⠅⣊⠢⢁⠂⠄⡁⠄⡐⡠⢬⢒⢌⠢⠩⢊⠨⠀⠄⠠⠈⡀⠅⠐⠀⡂⢂⠁⠄⠈⠄⠈⠀⠀⠀⡂⠀⠄⠀⠀⠀⠀⠀⡀⠄⠈
-⠀⠀⠀⠀⠀⠀⠀⠁⠄⡑⡀⠠⠠⢁⠀⢌⠢⡑⠌⠊⠀⠂⠄⠁⠄⠂⠁⠄⠂⠡⢀⠡⢑⢄⢷⢹⢜⣕⢗⢕⢝⢎⢇⣗⢯⣳⣳⣳⢧⢵⡰⣅⡪⡌⡢⡑⢌⢐⠌⣂⠦⡕⡕⢍⠢⢑⠡⠨⠨⡐⢌⠪⡀⢂⠐⡀⠄⢁⢁⠂⠠⠐⠀⡈⠀⠀⠂⡁⢀⠂⠈⠀⠀⠀⠀⠀⠁⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠡⠀⠀⡢⡑⠌⠀⠈⠀⠠⠐⢈⠀⠈⢂⠅⠀⠄⠂⠄⢂⡳⡝⣕⢗⢕⢱⢱⡱⣱⢝⡮⣟⣞⣾⣺⢯⢯⢟⡮⣟⢮⣳⢬⡢⡳⡹⡪⡣⡣⣊⠢⡊⡐⠨⡈⡂⡂⡢⠱⡌⠄⡂⠄⢂⠐⡐⠈⡀⡪⢐⠀⠂⢁⠀⡂⠂⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⢀⠀⡀⡀⢈⠐⠀⢌⠢⠂⠀⠈⡈⡐⠠⠠⠐⡀⢡⢀⠪⡐⠀⠨⠐⡔⡕⡕⢕⢜⢜⢮⢳⢝⢮⢯⣟⢾⣳⣳⡫⡏⣗⡽⣎⢯⢫⢎⡇⡇⡇⡏⢜⢜⡜⣆⠣⡂⡊⢌⠔⡐⢔⢐⠡⢣⢃⠢⡈⠄⢂⢂⠡⢀⢂⠁⠄⠁⢂⠂⠐⠀⠂⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠐⠀⠀⠄⠀⠂⠈⠨⡠⠁⠀⡀⠂⠀⠂⠅⡂⡡⠂⠀⠡⢑⠀⡐⠨⢸⢸⢘⢌⠎⡎⣎⢮⡺⡽⡹⡕⡕⣕⢧⢣⢫⢺⠸⣚⢜⢜⢜⡜⣎⢮⢪⢪⡪⡣⡎⡆⣇⠪⡐⣁⠢⠡⠡⡢⢑⠱⣑⢑⠔⡈⡐⡐⠄⡁⠄⠂⠠⠁⠄⡀⠂⠁⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⠨⠀⠈⢀⠠⠀⠐⠀⠁⠠⠐⠡⡈⡀⢂⠅⠠⢡⢣⠣⡊⡎⡞⡪⡪⣇⢏⢎⢎⠪⡊⡮⡣⡣⡣⡣⡣⡣⡊⢆⡣⡣⣫⡪⡮⡪⡞⣎⢗⢝⡜⡜⡔⢔⢐⠅⢕⠱⡨⠢⡑⠥⡑⡌⢆⠢⠈⠄⡐⠈⠄⡁⠈⠀⡀⠄⠀⠀⠠⠐⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠠⠀⠀⠀⠂⠀⠀⠂⠀⠈⢄⠃⠀⠄⠐⠀⠄⠁⠀⠂⡑⠄⢈⠐⡐⠠⢂⠊⢌⡢⡣⢣⢣⢣⢣⢣⢏⢖⢑⢌⢢⢑⠜⡜⡌⡆⡇⡇⡪⡨⡪⡪⡺⣪⡺⣜⢞⣝⢮⢯⢇⢇⡓⢌⠢⡑⠍⡂⢅⢇⠣⡊⢎⢎⢌⠢⠣⡁⢂⠢⠁⡁⠠⠈⡀⠄⡐⠀⠁⠀⠠⠐⠀⠀⠀⠀⠀⠁⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⡀⠄⠕⠁⠀⠁⠄⠀⠠⠈⢀⠁⢀⠐⡀⠄⠂⢨⠈⠔⢌⢢⢣⢕⢅⠣⡱⡱⡕⢕⠢⡑⡐⢕⢔⢱⠡⡣⡃⡇⢕⢔⢕⢅⢇⢯⡳⣕⢗⡽⣞⡽⡝⡕⡱⡨⠢⡑⢌⠆⢌⠢⡢⣃⢪⠰⡱⡐⢅⠣⡑⠔⠐⡀⠄⠀⢂⠢⡁⠂⠀⡀⠈⢀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠠⠀⠐⠀⠐⠀⠀⡀⠐⡀⢂⠈⢀⠂⠄⡈⠄⢀⠢⡢⡡⢂⢂⠡⡱⣱⢱⢸⠰⡑⢜⢜⢜⠸⡨⡂⡣⡱⡐⢕⢱⢑⢜⢜⡜⡜⡔⣕⢝⡽⣺⢵⢯⡯⣗⢯⢳⢱⢑⠕⡑⡌⡢⢑⢐⠅⡣⡊⡆⡣⠪⡸⡐⡑⢌⢊⢆⠠⠡⡁⡂⠅⠀⠂⠀⢂⠈⠀⠀⠀⠀⠀⠀⠠⠀⠀
-⠀⠐⠀⠀⠠⠀⠂⠁⠀⠀⠂⠀⠀⠀⠄⠂⠰⠀⠅⠠⢑⠠⡣⢣⢊⢢⢱⠠⢣⢇⢇⢇⢇⢇⢇⢎⢆⢣⠱⡌⡆⢎⢜⢜⢜⣜⢎⢧⢣⢣⡳⣕⢯⣫⢏⣯⢯⡯⡯⡪⡎⡪⡰⢡⢃⠕⢄⢑⠄⢕⢱⢱⢘⠜⡌⡎⡆⢕⠡⡂⠆⢅⠅⡊⡐⠀⠌⠠⠡⠠⢀⠀⠀⠀⠀⠀⡀⠀⠀⠀
-⠀⠀⡀⠠⠀⠀⡀⠀⠀⠐⠀⠂⠀⠠⠐⢈⠨⡈⢌⠨⠠⢑⢜⠰⡡⡑⢔⢕⢕⢯⡪⡎⡎⡎⡎⡎⡎⡎⡎⡎⡊⢎⢜⢜⢎⢮⢳⡱⣕⢯⢾⢵⣻⢮⣻⢾⢽⣝⢎⢮⢊⠢⡣⡑⢆⢑⠔⠡⠨⡐⡱⡡⢕⢜⢸⢸⢸⢘⢌⢌⠪⡐⡐⡀⠂⠁⠀⠂⠠⠀⡀⠀⠁⠠⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠠⠀⠠⠐⠀⠂⡂⢕⠠⠑⠄⠕⡕⡌⢎⡆⡇⡇⣟⢎⢎⢎⢎⢎⢎⢎⢎⢎⡇⡇⡧⡳⣹⡱⣝⢞⣞⡽⣝⡯⣳⣻⡺⡽⣝⢎⢇⢇⠕⢅⢇⢕⢡⢑⢌⠪⢐⢌⠢⡣⡣⡱⢱⢱⢱⢱⢱⢂⢇⢂⢂⢂⠂⡈⢀⠠⠈⡐⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠂⠀⠀⠀⠀⠀⠀⠄⠄⡂⠢⠨⠠⢂⢈⠐⡐⢔⠡⡁⠪⠨⡘⡜⢼⡪⡇⡇⡇⡣⡪⣪⢪⢪⢪⡪⣪⡪⣪⢺⡸⡪⣝⠜⣪⢗⣯⢷⢯⣗⢯⡺⣪⢾⡹⡪⡪⡣⢣⢱⢱⠱⡡⡑⡌⡢⢑⢐⠔⡡⢱⢱⢱⢱⠱⡱⡱⣑⢢⢑⢢⢂⠐⡈⠄⠀⠀⠀⡀⠁⠄⠀⠀⠀⠀⠀⠀⠀⡀
-⠀⠀⠀⠀⠀⠀⠀⠈⠀⠁⡂⠅⠅⠕⡐⠄⢅⠢⡂⠅⢅⢇⢕⢱⢨⢢⢪⠮⡎⡎⣆⢯⣪⢺⢜⡜⣜⢴⢹⣪⣣⡳⣝⢜⡢⣗⢯⡺⣽⢳⡣⣗⢝⢮⡣⡣⡣⡣⡣⡣⡳⡱⡑⢌⢢⠱⡈⡢⢂⢊⠔⡡⢱⢵⢱⢑⢕⢕⢕⡅⢇⠆⡢⠡⡐⠨⡀⠁⠀⠀⠀⠀⠀⠀⠀⡀⠀⠂⠀⠀
-⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠈⠈⠀⠠⠐⠀⠅⠨⠨⢐⢑⠥⡑⡌⡪⡪⣝⢵⢳⢱⢕⠕⢅⢇⢗⢵⡫⡧⡳⣕⣗⢵⣣⢺⣰⡳⣝⣗⢽⡪⡗⣝⢕⢕⢕⠜⡌⣲⢝⢎⢎⢌⠢⡣⠣⡑⠌⡂⠢⠡⡊⡆⣗⢕⢕⠕⡕⢕⢕⢕⢅⠂⠅⠄⠅⢂⠁⢂⠀⠀⡀⠀⠄⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠂⠀⠌⠐⠀⡁⠈⡀⠌⡐⢔⠬⡸⡸⡸⡪⡪⡪⣣⡫⡣⢃⠕⡸⡱⡳⡙⢮⡫⣞⢮⢏⠾⡵⡳⡝⡮⣗⢽⣪⡳⣣⢣⢣⢱⢑⣕⢗⡕⡇⡣⠢⡱⡑⢕⠅⢕⠨⡘⢌⢢⢯⢎⡎⡆⡇⡣⢱⢑⠕⢌⠪⡠⠁⢂⠀⠐⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⡀⠄⢀⢂⠆⡣⡣⢃⠣⡑⢅⠣⡃⡇⡗⣕⢗⡕⠅⡆⡇⡏⣎⢢⢡⢹⡪⡗⡕⡕⡽⡸⣪⡳⡳⣹⢲⢹⢰⢱⢑⢅⢧⢳⢕⢕⢕⢌⠪⡸⡨⢢⢃⠅⡊⢔⢕⢝⢎⢇⡇⡇⡕⢌⠌⡆⠪⢐⠡⢂⠅⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠄⠀⠀⠀⠀⠁⠀⠀⠀⠈⠀⡀⢀⠄⢅⢢⠨⡂⡊⡢⡑⢌⠆⡇⡣⠣⡑⢜⢜⢎⡇⡇⡎⡎⣜⢔⢕⢸⡸⣕⢝⢮⢪⢸⢜⢜⢕⢵⠱⣑⠥⡣⡱⡕⣕⢕⢕⢕⠕⢔⢡⠣⡊⡢⠢⡑⢌⠢⡑⢜⢕⢕⢕⠕⡕⡡⢑⢌⢊⠐⡈⠐⠁⢂⠠⠀⠁⠀⠄⠐⠀⠀⠀⢀⠀⠀⠀⡀
-⠀⠀⠀⠀⠀⠀⢀⠀⠀⠄⠂⠠⠁⠐⠐⠈⠐⠐⠑⠐⡁⡎⡎⡖⡕⣌⢆⢕⢜⡜⡜⡜⣜⢵⡱⣕⢵⢝⢮⣢⡫⡮⡪⣎⢮⢪⢪⢎⢇⢣⢣⢣⢝⢮⢺⢜⢎⢎⡎⡇⢕⢑⢜⢜⢐⠜⢌⠪⢐⠁⡊⢜⢜⢜⠜⠌⡂⡊⠔⠨⢂⢂⠐⠀⠂⠀⠀⠀⠀⠁⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠈⡀⠡⠈⠢⡑⢌⠪⡘⡜⢜⢕⢇⠇⡇⠇⡇⡇⡧⡳⡵⡹⣪⢮⢺⢕⢧⡪⡢⡱⣱⢹⢸⢨⢪⣪⢫⢳⢱⡱⡱⡱⡱⡡⡡⡣⡱⡂⢆⢇⢃⠑⠄⠂⢌⠪⢢⠡⠣⡁⢂⠐⠐⡀⠌⢐⠀⠁⠀⠠⠈⠀⠠⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀
-⠀⠀⠀⠀⢀⠀⠂⠀⠀⠄⠀⠀⡀⠄⠂⠀⢀⠀⠄⠂⠅⡂⠅⠢⡑⢜⠸⡘⡔⣑⢌⢎⢎⡚⡮⢯⢯⢎⢆⢇⢫⣳⢕⡕⡇⡏⡎⡎⣎⢎⢧⢳⡹⣸⢜⢜⢜⢼⠸⡐⡕⡕⡕⢌⢆⢇⠆⢅⠡⠈⠠⢊⢂⠊⢔⠀⢂⠈⠄⠠⠐⠐⢈⠀⠠⢀⠁⡀⠁⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠠
-⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠊⠌⠂⢐⢈⠐⢌⠢⠡⡡⡣⢣⠣⡳⡣⢣⣫⡳⣫⢯⣇⣇⡇⣗⡝⡮⡣⡲⣝⢎⢊⢎⢮⡪⡞⡕⣕⢵⡫⡪⢪⢸⢸⢸⢸⢸⢸⢸⠨⡐⠠⢁⠨⠐⠄⡑⡐⢈⠠⠐⠐⢀⠂⠐⠀⠠⠁⠠⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠈⠀⠠⠐⠈⠄⠂⠡⢂⠑⡑⠌⠌⠢⡃⡕⡮⡳⡵⡝⣞⢗⣗⣗⢯⢞⡮⡳⣹⢽⢐⠅⡢⢱⡓⡵⡹⡸⢸⠸⡜⡌⣎⢎⢎⢎⢎⢎⢎⢎⢪⠠⠡⠀⠄⠨⠐⡀⢊⠠⠐⠈⠠⠀⠂⡁⢀⠂⠂⠀⠄⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠈⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠂⠀⠄⠀⠈⠀⠂⠡⡈⠠⠀⠀⠄⢂⢁⠢⡑⡅⡇⡇⡏⢎⢗⢇⢗⢝⠕⢯⡺⡕⡇⡕⢌⢢⠣⡪⡊⡪⠨⠪⣘⢜⠜⡜⡌⡎⣎⢎⢎⠎⡢⡱⠨⠐⠠⠈⡀⠡⠐⡀⢂⢈⠐⢀⠨⠠⢀⢐⠀⡈⠀⡀⠀⠀⠂⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀
-⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠄⠀⢀⠀⠀⠠⠀⠀⠀⠈⠀⢁⠠⠀⠐⠀⢀⢁⠂⠠⡱⡑⡌⠜⠨⠠⡑⢅⠣⡳⡱⡱⡱⣸⢪⢪⢪⢢⢣⢣⠣⢪⢸⠨⠣⡑⠕⡕⢕⢕⢕⢕⢕⠅⡕⢜⠐⢅⠡⠐⢀⠐⠀⠅⠐⠠⠐⢈⠀⠠⠑⠠⠂⠂⠀⠠⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠂⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⡀⠐⠀⠀⡀⠈⢀⠈⠀⠀⡀⠂⠁⠀⠄⠀⢠⠃⢈⠠⠡⢑⠐⢌⢢⢑⠨⡪⡪⡚⡜⡵⡕⡕⡕⡕⡱⡩⡪⡢⠣⡃⡪⢨⢊⢎⠢⢣⠱⡡⡱⢘⢔⢁⢂⠊⡈⠄⠠⠁⠌⡈⠄⡑⡐⢌⠠⠡⢁⠂⠀⠂⠀⠀⠀⠀⠀⠠⠐⠈⠀⠀⠀⠀⡀⠄⠂
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠄⠀⠀⠀⢀⠁⠀⠀⠀⠀⢈⠀⠀⠁⠀⠠⠠⡑⢅⢑⠔⡡⡡⠱⡐⡅⡣⡪⣪⢳⡱⡑⡎⡎⡪⡸⡘⢌⢪⢐⠕⡡⢂⠕⠡⠊⠌⡊⠪⡊⢆⢂⢂⠂⠌⠠⠈⡀⢂⢂⠐⡨⡐⠨⢀⠀⡀⠁⠀⠂⠀⠂⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠄⢀⠀⠀⠠⠀⠀⢀⠀⠀⠀⠁⠀⠈⠌⡂⠅⡂⡂⡂⠅⡊⡐⢜⢜⢌⢗⡕⡕⢕⠌⠂⠅⠅⡑⢐⠅⢌⠐⡐⠄⠁⠅⠂⠌⠌⣊⠢⡃⢕⠌⡐⢀⠡⠀⠂⡂⡂⠔⠠⠁⠄⠠⠀⡀⠁⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⡁⢂⠡⠐⠀⡂⠅⡂⠪⢐⠡⢃⠣⡣⡑⠅⡂⠄⢅⢂⠐⠐⡈⠐⠀⡂⢁⠈⢈⠀⠡⠨⠐⢅⠪⡐⡑⢄⠂⠐⢈⠀⠂⠢⢁⠡⠈⡀⠂⠁⠀⢈⠀⠀⡀⠐⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠄⠁⠀⢂⠁⠌⠌⠐⠐⠀⠂⢕⠨⠐⡀⠌⠀⡂⠄⠁⡀⠂⠁⠐⡀⠐⡀⠐⠈⠄⠅⡑⠌⡂⡊⡢⠨⢈⠠⢈⠈⠄⡁⠀⠠⠀⠂⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠐⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠠⠐⠀⠀⠀⠄⠈⠀⠂⠁⠀⠄⠀⠀⢈⠀⡁⠈⡀⠅⡂⠐⠀⠄⠀⠄⠐⠀⠠⠐⠈⠄⠐⠀⠐⠀⠌⠠⠁⠄⠡⠐⢐⠨⠨⠐⢈⠔⢈⢐⠀⠅⡀⠀⠐⠈⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⡀⠀⠀⠠⠀⠄⠀⡀⠐⠨⢀⠡⠐⠀⠀⠂⠁⠐⠀⠁⠐⠀⠁⠈⡀⠂⠁⠐⠀⢈⠠⠀⠄⠁⠀⠀⠈⠐⠠⢁⠢⠐⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠂⠀⠀⠁⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠈⠄⠠⠐⠀⠐⠀⠀⠀⠐⠀⠀⠄⠂⠁⠀⠀⠈⠀⠠⠀⠀⠄⠀⠀⠀⠐⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⢀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠐⠀⠁⠀⠀⠄⠀⠀⠡⠐⠀⠀⠀⡀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠄⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠐⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠐⠀⠁⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠐⠈⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠁⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⡀⠀⠐⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠐⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠈⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠈⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`;
+    <div id="modal-documentation" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">documentation</h2>
+            <p class="modal-description">
+                Documentation for magat fairy covers supported data formats, conversion options, output structure,
+                and troubleshooting. Supported inputs include single experiments, single tracks, ESETs, and collections with multiple ESETs.
+            </p>
+        </div>
+    </div>
 
-        if (fairyArt) {
-            fairyArt.textContent = fairyASCII;
-        }
-        if (mainFairyArt) {
-            mainFairyArt.textContent = fairyASCII;
-        }
-        
-        let loadingStartTime = Date.now();
-        let userClicked = false;
-        const minLoadingTime = 4000; // 4 seconds minimum
-        
-        // Track user clicks
-        document.addEventListener('click', () => {
-            userClicked = true;
-            hideLoadingScreen();
-        }, { once: true });
-        
-        const mainFairyBackground = document.getElementById('main-fairy-background');
+    <div id="modal-examples" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">examples</h2>
+            <p class="modal-description">
+                Example workflows and sample data show how to convert different data types, explore output H5 structure,
+                and apply best practices for working with converted MAGAT data in Python.
+            </p>
+        </div>
+    </div>
 
-        function hideLoadingScreen() {
-            if (!loadingScreen) return;
-            
-            const elapsed = Date.now() - loadingStartTime;
-            const remaining = Math.max(0, minLoadingTime - elapsed);
-            
-            setTimeout(() => {
-                if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-                    // Fade to background instead of hiding
-                    loadingScreen.classList.add('hidden');
-                    // Keep it visible but as background
-                    loadingScreen.style.pointerEvents = 'none';
-                }
-            }, remaining);
-        }
-        
-        function updateLoading(percent) {
-            // Update gradient rotation based on loading progress
-            const gradient = document.querySelector('.fairy-gradient');
-            if (gradient) {
-                const rotation = (percent / 100) * 360;
-                gradient.style.transform = `translate(-25%, -25%) rotate(${rotation}deg)`;
+    <div id="modal-about" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2 class="modal-title">about</h2>
+            <p class="modal-description">
+                magat fairy transforms MAGAT analyzer data from MATLAB format to HDF5 for Python workflows.
+                It detects data types, handles calibration, and preserves experiment metadata to bridge MATLAB and Python ecosystems.
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="fairy-frames.js" charset="UTF-8"></script>
+    <script>
+        const cinnamorollColors = {
+            lightBlue: 0xB8E6FF,
+            cream: 0xFFF5E6,
+            lightPink: 0xFFE4E1,
+            white: 0xFFFFFF,
+            softBlue: 0xD4F1F4
+        };
+
+        // Cycle through first 5 fairy frames as background
+        function initFairyBackground() {
+            const background = document.getElementById('fairy-background');
+            if (!background) {
+                console.error('fairy-background element not found');
+                return;
             }
-            if (percent >= 100 && loadingScreen) {
-                hideLoadingScreen();
+            
+            if (typeof fairyFrames === 'undefined' || !fairyFrames || !fairyFrames.length) {
+                console.log('Waiting for fairyFrames...');
+                setTimeout(initFairyBackground, 100);
+                return;
             }
+
+            console.log('Loading fairy frames, total frames:', fairyFrames.length);
+            
+            // Use first 5 frames (indices 0-4)
+            const framesToUse = fairyFrames.slice(0, 5);
+            let currentFrameIndex = 0;
+            
+            // Set initial frame
+            background.textContent = framesToUse[currentFrameIndex];
+            
+            // Cycle through frames
+            setInterval(() => {
+                currentFrameIndex = (currentFrameIndex + 1) % framesToUse.length;
+                background.textContent = framesToUse[currentFrameIndex];
+            }, 200); // Change frame every 200ms
         }
 
-        // Start loading immediately
-        updateLoading(10);
+        function initTitleLighting() {
+            const container = document.getElementById('title-container');
+            const canvas = document.getElementById('title-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 100);
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x000000, 0);
+            camera.position.z = 5;
 
-        // Scene setup
-        const scene = new THREE.Scene();
-        scene.background = null; // Transparent so chartreuse shows through
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
-            alpha: true,
-            premultipliedAlpha: false
-        });
-        renderer.setClearColor(0x000000, 0); // Fully transparent
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.domElement.style.backgroundColor = 'transparent';
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        updateLoading(40);
-
-        // Camera position - view the data flow from side
-        camera.position.set(0, 5, 20);
-        camera.lookAt(0, 0, 0);
-
-        // Lighting - two-tone (warm left, cool right)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-        scene.add(ambientLight);
-
-        // Warm light for MATLAB side (left)
-        const matlabLight = new THREE.PointLight(0xff6b35, 1.5, 30);
-        matlabLight.position.set(-15, 5, 0);
-        scene.add(matlabLight);
-
-        // Cool light for H5 side (right)
-        const h5Light = new THREE.PointLight(0x667eea, 1.5, 30);
-        h5Light.position.set(15, 5, 0);
-        scene.add(h5Light);
-
-        // Conversion zone light (center)
-        const conversionLight = new THREE.SpotLight(0xfbbf24, 2, 20, Math.PI / 4, 0.5);
-        conversionLight.position.set(0, 10, 0);
-        conversionLight.target.position.set(0, 0, 0);
-        scene.add(conversionLight);
-        scene.add(conversionLight.target);
-
-        updateLoading(50);
-
-        // Color schemes
-        const matlabColors = [0xff6b35, 0xff8c42, 0xffa07a]; // Orange/red
-        const h5Colors = [0x667eea, 0x764ba2, 0x9b59b6]; // Purple/blue
-        const conversionColors = [0xfbbf24, 0xf59e0b, 0xf97316]; // Yellow/orange
-
-        // MATLAB side: Hierarchical data structures (genotype → ESET → experiment)
-        const matlabStructures = [];
-        const structureGroups = [];
-
-        // Create individual larvae above title (like GitHub homepage)
-        const larvaCount = 12;
-        const matlabLarvae = [];
-        
-        // Larva colors matching GitHub homepage style
-        const larvaColors = [
-            0x7FFF00, // Chartreuse
-            0x7df9ff, // Electric blue
-            0x00ff88, // Mint
-            0xffffff, // White
-            0xffff00, // Yellow
-            0xff00ff, // Magenta
-            0x00ffff, // Cyan
-            0xff6600, // Orange
-            0x9933ff  // Purple
-        ];
-        
-        function createGitHubLarva(color) {
-            // Create segmented larva using CatmullRomCurve3 (like GitHub homepage)
-            const larvaLength = 0.8 + Math.random() * 0.4;
-            const curve = new THREE.CatmullRomCurve3([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(larvaLength * 0.3, 0, 0),
-                new THREE.Vector3(larvaLength * 0.6, 0, 0),
-                new THREE.Vector3(larvaLength, 0, 0)
-            ]);
-            
-            const points = curve.getPoints(20);
-            const larvaGeometry = new THREE.BufferGeometry().setFromPoints(points);
-            
-            // Create glowing effect matching GitHub homepage
-            const larvaMaterial = new THREE.LineBasicMaterial({
-                color: color,
-                linewidth: 3,
-                opacity: 0.85,
-                transparent: true
-            });
-            
-            const larva = new THREE.Line(larvaGeometry, larvaMaterial);
-            
-            // Add glow effect using point light
-            const glowLight = new THREE.PointLight(color, 0.5, 1);
-            glowLight.position.set(larvaLength/2, 0, 0);
-            larva.add(glowLight);
-            
-            // Add motion properties
-            larva.userData = {
-                velocity: 0.02 + Math.random() * 0.03,
-                direction: Math.random() * Math.PI * 2,
-                lastTurn: 0,
-                turnInterval: 20 + Math.random() * 40,
-                wigglePhase: Math.random() * Math.PI * 2,
-                wiggleFrequency: 0.2 + Math.random() * 0.3,
-                wiggleAmount: 0.05 + Math.random() * 0.1,
-                size: 0.3 + Math.random() * 0.2,
-                trajectoryPoints: [],
-                trajectoryColor: new THREE.Color(color),
-                lastTrajectoryUpdate: 0,
-                trajectoryUpdateInterval: 3
-            };
-            
-            // Resize larva
-            larva.scale.set(larva.userData.size, larva.userData.size, larva.userData.size);
-            
-            return larva;
-        }
-        
-        for (let i = 0; i < larvaCount; i++) {
-            const color = larvaColors[Math.floor(Math.random() * larvaColors.length)];
-            const larva = createGitHubLarva(color);
-            
-            // Position above title in a spread pattern
-            const angle = (i / larvaCount) * Math.PI * 2;
-            const radius = 3 + Math.random() * 2;
-            larva.position.set(
-                Math.cos(angle) * radius,
-                8 + Math.sin(angle) * radius * 0.3 + (Math.random() - 0.5) * 2,
-                -5 + (Math.random() - 0.5) * 2
-            );
-            
-            // Orient larva
-            larva.lookAt(0, 0, 0);
-            const randomRotation = Math.random() * Math.PI * 2;
-            larva.rotateOnAxis(new THREE.Vector3(0, 0, 1), randomRotation);
-            
-            scene.add(larva);
-            matlabLarvae.push(larva);
-            
-            // Store for particle emission
-            matlabStructures.push({
-                mesh: larva,
-                type: 'larva',
-                group: null,
-                lastEmission: 0
-            });
-        }
-
-        updateLoading(60);
-
-        // H5 side: Biased random walk clusters shaped like larvae (right side)
-        const h5Structures = [];
-        const h5Tree = new THREE.Group();
-        h5Tree.position.x = 12;
-        h5Tree.position.y = 0;
-
-        // Create boid swarm system for larvae
-        const boidCount = 15;
-        const boids = [];
-        
-        // Larva shape: elongated capsule/sphere
-        function createLarvaShape() {
-            const larvaGroup = new THREE.Group();
-            
-            // Main body (elongated sphere)
-            const bodyGeo = new THREE.SphereGeometry(0.15, 8, 8);
-            const bodyMat = new THREE.MeshPhysicalMaterial({
-                color: h5Colors[0],
-                emissive: h5Colors[0],
-                emissiveIntensity: 0.4,
-                metalness: 0.3,
-                roughness: 0.1,
-                clearcoat: 1.0,
-                transmission: 0.3,
-                opacity: 0.9,
-                transparent: true
-            });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.scale.set(1, 2, 1); // Elongate vertically
-            larvaGroup.add(body);
-            
-            // Head (slightly larger)
-            const headGeo = new THREE.SphereGeometry(0.18, 8, 8);
-            const head = new THREE.Mesh(headGeo, bodyMat);
-            head.position.y = 0.3;
-            larvaGroup.add(head);
-            
-            return larvaGroup;
-        }
-        
-        // Initialize larvae in clusters
-        const clusterCenters = [
-            new THREE.Vector3(10, 3, 0),
-            new THREE.Vector3(12, -2, 0),
-            new THREE.Vector3(14, 1, 0)
-        ];
-        
-        for (let i = 0; i < boidCount; i++) {
-            const larva = createLarvaShape();
-            // Assign to random cluster
-            const clusterIdx = Math.floor(Math.random() * clusterCenters.length);
-            const center = clusterCenters[clusterIdx];
-            larva.position.set(
-                center.x + (Math.random() - 0.5) * 2,
-                center.y + (Math.random() - 0.5) * 2,
-                center.z + (Math.random() - 0.5) * 1
-            );
-            
-            const boid = {
-                mesh: larva,
-                position: larva.position.clone(),
-                velocity: new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.02,
-                    (Math.random() - 0.5) * 0.02,
-                    (Math.random() - 0.5) * 0.02
-                ),
-                type: 'larva'
-            };
-            
-            h5Tree.add(larva);
-            boids.push(boid);
-            h5Structures.push({ mesh: larva, type: 'larva', boid: boid });
-        }
-
-        scene.add(h5Tree);
-
-        updateLoading(80);
-
-        // Post-processing - ensure transparency
-        const composer = new EffectComposer(renderer);
-        const renderPass = new RenderPass(scene, camera);
-        renderPass.clear = true;
-        renderPass.clearColor = 0x7fff00; // Chartreuse
-        renderPass.clearAlpha = 0; // Transparent
-        composer.addPass(renderPass);
-
-        const bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
-            1.5, // strength
-            0.4, // radius
-            0.85 // threshold
-        );
-        composer.addPass(bloomPass);
-
-        const outputPass = new OutputPass();
-        composer.addPass(outputPass);
-        
-        // Force renderer to not clear with black
-        renderer.autoClear = false;
-
-        updateLoading(90);
-
-        // Mouse interaction - wind effect
-        const mouse = new THREE.Vector2();
-        const mouseWorld = new THREE.Vector3();
-        const windStrength = 2.0;
-        const windRadius = 12;
-        let mouseWorldPos = new THREE.Vector3(0, 0, 0);
-
-        window.addEventListener('mousemove', (event) => {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            // Convert normalized mouse to world coordinates
-            // Using camera's view direction and screen space
-            const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-            vector.unproject(camera);
-            const dir = vector.sub(camera.position).normalize();
-            const distance = -camera.position.z / dir.z;
-            mouseWorldPos = camera.position.clone().add(dir.multiplyScalar(distance));
-        });
-
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 10;
-        controls.maxDistance = 50;
-
-        updateLoading(95);
-
-        // Complete loading before starting animation
-        updateLoading(100);
-        
-        // Animation
-        const clock = new THREE.Clock();
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            try {
-                const elapsedTime = clock.getElapsedTime();
-                const delta = clock.getDelta();
-
-            // Animate MATLAB larvae above title (matching GitHub homepage style)
-            matlabLarvae.forEach((larva, idx) => {
-                const ud = larva.userData;
-                if (!ud) return;
-                
-                // Update wiggle phase
-                ud.wigglePhase += ud.wiggleFrequency || 0.2;
-                
-                // Decide if it's time to change direction
-                if (ud.lastTurn !== undefined) {
-                    ud.lastTurn += 1;
-                    if (ud.turnInterval && ud.lastTurn > ud.turnInterval) {
-                        ud.direction += (Math.random() - 0.5) * Math.PI;
-                        ud.lastTurn = 0;
-                        ud.turnInterval = 20 + Math.random() * 40;
-                    }
-                }
-                
-                // Apply small random direction changes
-                if (ud.direction) ud.direction += (Math.random() - 0.5) * 0.1;
-                
-                // Add wiggle effect to direction
-                const wiggleDirection = ud.direction + (ud.wiggleAmount ? Math.sin(ud.wigglePhase) * ud.wiggleAmount : 0);
-                
-                // Move in a gentle floating pattern
-                larva.position.y += Math.sin(elapsedTime * 0.5 + idx) * 0.01;
-                larva.position.x += Math.cos(wiggleDirection) * (ud.velocity || 0.02) * 0.1;
-                larva.position.z += Math.sin(wiggleDirection) * (ud.velocity || 0.02) * 0.1;
-                
-                // Rotate larva to face direction
-                if (wiggleDirection !== undefined) {
-                    larva.rotation.z = wiggleDirection;
-                }
-                
-                // Update trajectory
-                if (ud.lastTrajectoryUpdate !== undefined && ud.trajectoryUpdateInterval) {
-                    ud.lastTrajectoryUpdate++;
-                    if (ud.lastTrajectoryUpdate >= ud.trajectoryUpdateInterval) {
-                        ud.lastTrajectoryUpdate = 0;
-                        
-                        if (ud.trajectoryPoints) {
-                            ud.trajectoryPoints.push(larva.position.clone());
-                            
-                            // Limit trajectory length
-                            if (ud.trajectoryPoints.length > 20) {
-                                ud.trajectoryPoints.shift();
-                            }
-                            
-                            // Update trajectory line
-                            if (ud.trajectoryLine) {
-                                ud.trajectoryLine.geometry.dispose();
-                                ud.trajectoryLine.geometry = new THREE.BufferGeometry().setFromPoints(ud.trajectoryPoints);
-                            } else if (ud.trajectoryPoints.length > 1 && ud.trajectoryColor) {
-                                const material = new THREE.LineBasicMaterial({
-                                    color: ud.trajectoryColor,
-                                    transparent: true,
-                                    opacity: 0.6,
-                                    linewidth: 2
-                                });
-                                
-                                const geometry = new THREE.BufferGeometry().setFromPoints(ud.trajectoryPoints);
-                                const line = new THREE.Line(geometry, material);
-                                ud.trajectoryLine = line;
-                                scene.add(line);
-                            }
-                        }
-                    }
-                }
-                
-                // Gentle pulsing opacity
-                const pulse = 0.7 + Math.sin(elapsedTime * 2 + idx) * 0.15;
-                if (larva.material) {
-                    larva.material.opacity = pulse;
-                }
-            });
-
-            // Animate H5 biased random walk clusters (larvae)
-            const clusterRadius = 4;
-            const randomWalkStrength = 0.02;
-            const biasStrength = 0.01;
-            const clusterCenters = [
-                new THREE.Vector3(10, 3, 0),
-                new THREE.Vector3(12, -2, 0),
-                new THREE.Vector3(14, 1, 0)
+            const lights = [
+                new THREE.PointLight(cinnamorollColors.lightBlue, 0.7, 12),
+                new THREE.PointLight(cinnamorollColors.lightPink, 0.7, 12),
+                new THREE.PointLight(cinnamorollColors.cream, 0.5, 12)
             ];
-            
-            // Group larvae into clusters
-            const clusters = [];
-            clusterCenters.forEach((center, cIdx) => {
-                clusters.push({
-                    center: center,
-                    members: []
-                });
+            lights[0].position.set(-2.5, 0.5, 3);
+            lights[1].position.set(2.5, 0.3, 3);
+            lights[2].position.set(0, -1.5, 3);
+            lights.forEach(l => scene.add(l));
+
+            let t = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                t += 0.003;
+                lights[0].position.x = -2.5 + Math.sin(t * 0.9) * 0.3;
+                lights[0].position.y = 0.5 + Math.cos(t * 0.8) * 0.25;
+                lights[1].position.x = 2.5 + Math.cos(t * 0.85) * 0.3;
+                lights[1].position.y = 0.3 + Math.sin(t * 0.7) * 0.25;
+                lights[2].position.y = -1.5 + Math.cos(t * 0.6) * 0.2;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
             });
-            
-            // Assign larvae to nearest cluster
-            h5Structures.forEach((struct, idx) => {
-                if (struct.boid) {
-                    let nearestCluster = 0;
-                    let nearestDist = Infinity;
-                    clusterCenters.forEach((center, cIdx) => {
-                        const dist = struct.boid.position.distanceTo(center);
-                        if (dist < nearestDist) {
-                            nearestDist = dist;
-                            nearestCluster = cIdx;
+        }
+
+        function initMenu() {
+            const copyButton = document.getElementById('copy-clone-btn');
+            if (copyButton) {
+                copyButton.addEventListener('click', async () => {
+                    const cloneCommand = 'git clone https://github.com/GilRaitses/mat2h5.git';
+                    try {
+                        await navigator.clipboard.writeText(cloneCommand);
+                        copyButton.textContent = 'copied';
+                        copyButton.classList.add('copied');
+                        setTimeout(() => {
+                            copyButton.textContent = 'clone';
+                            copyButton.classList.remove('copied');
+                        }, 2000);
+                    } catch (err) {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = cloneCommand;
+                        textArea.style.position = 'fixed';
+                        textArea.style.opacity = '0';
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            copyButton.textContent = 'copied';
+                            copyButton.classList.add('copied');
+                            setTimeout(() => {
+                                copyButton.textContent = 'clone';
+                                copyButton.classList.remove('copied');
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Failed to copy:', err);
                         }
-                    });
-                    clusters[nearestCluster].members.push(struct);
-                }
-            });
-            
-            // Update each cluster with biased random walk
-            clusters.forEach((cluster, cIdx) => {
-                // Update cluster center with random walk
-                const randomStep = new THREE.Vector3(
-                    (Math.random() - 0.5) * randomWalkStrength,
-                    (Math.random() - 0.5) * randomWalkStrength,
-                    (Math.random() - 0.5) * randomWalkStrength * 0.5
-                );
-                cluster.center.add(randomStep);
-                
-                // Bias cluster center back toward origin area
-                const bias = cluster.center.clone().multiplyScalar(-biasStrength);
-                cluster.center.add(bias);
-                
-                // Update each member of cluster
-                cluster.members.forEach((struct) => {
-                    const boid = struct.boid;
-                    
-                    // Random walk component
-                    const randomWalk = new THREE.Vector3(
-                        (Math.random() - 0.5) * randomWalkStrength * 2,
-                        (Math.random() - 0.5) * randomWalkStrength * 2,
-                        (Math.random() - 0.5) * randomWalkStrength
-                    );
-                    
-                    // Bias toward cluster center
-                    const toCenter = new THREE.Vector3()
-                        .subVectors(cluster.center, boid.position)
-                        .normalize()
-                        .multiplyScalar(biasStrength * 5);
-                    
-                    // Combine forces
-                    boid.velocity.add(randomWalk);
-                    boid.velocity.add(toCenter);
-                    
-                    // Damping
-                    boid.velocity.multiplyScalar(0.95);
-                    
-                    // Limit speed
-                    const maxSpeed = 0.05;
-                    if (boid.velocity.length() > maxSpeed) {
-                        boid.velocity.normalize().multiplyScalar(maxSpeed);
-                    }
-                    
-                    // Keep within cluster radius
-                    const distFromCenter = boid.position.distanceTo(cluster.center);
-                    if (distFromCenter > clusterRadius) {
-                        const backToCenter = new THREE.Vector3()
-                            .subVectors(cluster.center, boid.position)
-                            .normalize()
-                            .multiplyScalar(0.02);
-                        boid.velocity.add(backToCenter);
-                    }
-                    
-                    // Update position
-                    boid.position.add(boid.velocity);
-                    struct.mesh.position.copy(boid.position);
-                    
-                    // Rotate larva to face direction of movement
-                    if (boid.velocity.length() > 0.001) {
-                        struct.mesh.lookAt(boid.position.clone().add(boid.velocity));
+                        document.body.removeChild(textArea);
                     }
                 });
-            });
-
-            // Apply wind force to MATLAB larvae
-            matlabLarvae.forEach((larva) => {
-                const larvaWorldPos = new THREE.Vector3();
-                larva.getWorldPosition(larvaWorldPos);
-                const distance = larvaWorldPos.distanceTo(mouseWorldPos);
-                
-                if (distance < windRadius && distance > 0.1) {
-                    const force = (1 - distance / windRadius) * windStrength * delta;
-                    const direction = new THREE.Vector3()
-                        .subVectors(larvaWorldPos, mouseWorldPos)
-                        .normalize();
-                    larva.position.add(direction.multiplyScalar(force));
-                }
-            });
-
-            // Apply wind force to H5 structures
-            h5Structures.forEach((struct) => {
-                const structWorldPos = new THREE.Vector3();
-                struct.mesh.getWorldPosition(structWorldPos);
-                const distance = structWorldPos.distanceTo(mouseWorldPos);
-                
-                if (distance < windRadius && distance > 0.1) {
-                    const force = (1 - distance / windRadius) * windStrength * delta;
-                    const direction = new THREE.Vector3()
-                        .subVectors(structWorldPos, mouseWorldPos)
-                        .normalize();
-                    struct.mesh.position.add(direction.multiplyScalar(force));
-                }
-            });
-
-
-            // Animate lights
-            matlabLight.intensity = 1.5 + Math.sin(elapsedTime) * 0.3;
-            h5Light.intensity = 1.5 + Math.sin(elapsedTime + Math.PI) * 0.3;
-            conversionLight.intensity = 2 + Math.sin(elapsedTime * 2) * 0.5;
-
-            // Camera subtle movement
-            camera.position.x += Math.sin(elapsedTime * 0.1) * 0.01;
-            camera.position.y += Math.cos(elapsedTime * 0.15) * 0.01;
-
-            controls.update();
-            
-            // Clear with chartreuse background showing through
-            renderer.setClearColor(0x7fff00, 0); // Chartreuse but fully transparent
-            renderer.clearColor();
-            composer.render();
-            } catch (error) {
-                console.error('Animation error:', error);
             }
         }
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
-        });
+        function initModalsCloseButtons() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                const closeBtn = modal.querySelector('.modal-close');
+                if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) modal.classList.remove('active');
+                });
+            });
+        }
 
-        // Start animation
-        animate();
-
-        // Error handling
-        window.addEventListener('error', (e) => {
-            console.error('Error:', e);
-            // Hide loading screen on error
-            if (loadingScreen) {
-                loadingScreen.classList.add('hidden');
+        function waitForThreeJS(callback) {
+            if (typeof THREE !== 'undefined') {
+                callback();
+            } else {
+                setTimeout(() => waitForThreeJS(callback), 50);
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initFairyBackground();
+            initModalsCloseButtons();
+            
+            waitForThreeJS(() => {
+                initTitleLighting();
+            });
+            initMenu();
         });
     </script>
 </body>
