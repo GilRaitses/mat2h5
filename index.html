@@ -204,18 +204,25 @@
             height: 400%;
             background: conic-gradient(
                 from 0deg,
-                #ff6b35 0deg,
-                #fbbf24 60deg,
-                #7fff00 120deg,
-                #7df9ff 180deg,
-                #667eea 240deg,
-                #764ba2 300deg,
-                #ff6b35 360deg
+                #ff6b35 0%,
+                #ff7a45 10%,
+                #fbbf24 20%,
+                #f9d371 30%,
+                #7fff00 40%,
+                #8fff33 50%,
+                #7df9ff 60%,
+                #8dfaff 70%,
+                #667eea 80%,
+                #6f7feb 90%,
+                #764ba2 100%,
+                #8a5fb8 110%,
+                #ff6b35 120%
             );
             background-size: 200% 200%;
             animation: swirlGradient 10s linear infinite;
-            mix-blend-mode: multiply;
-            opacity: 0.25;
+            mix-blend-mode: soft-light;
+            opacity: 0.2;
+            filter: blur(40px);
             z-index: 1;
             pointer-events: none;
         }
