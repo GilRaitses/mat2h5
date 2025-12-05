@@ -700,6 +700,9 @@
 
         updateLoading(95);
 
+        // Complete loading before starting animation
+        updateLoading(100);
+        
         // Animation
         const clock = new THREE.Clock();
         
@@ -945,9 +948,6 @@
             composer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Complete loading before starting animation
-        updateLoading(100);
-        
         // Start animation
         animate();
         
