@@ -185,19 +185,18 @@ mat2h5/
 ├── mat2h5.py                   # Main entry point (CLI tool)
 │
 ├── src/                         # Source code
-│   └── mat2h5/                 # Package directory
-│       ├── __init__.py         # Package initialization
-│       └── bridge.py           # MAGAT Bridge (MATLAB interface)
-│
-├── scripts/                     # User-facing scripts
-│   ├── conversion/              # MATLAB → H5 conversion tools
-│   │   ├── convert_matlab_to_h5.py    # Core conversion logic
-│   │   ├── batch_export_esets.py      # Batch processing
-│   │   ├── append_camcal_to_h5.py     # Camera calibration
-│   │   └── unlock_h5_file.py          # H5 file utilities
-│   └── analysis/                # H5 analysis scripts
-│       ├── engineer_data.py           # Basic analysis
-│       └── engineer_dataset_from_h5.py # Enhanced analysis
+│   ├── mat2h5/                 # Package directory
+│   │   ├── __init__.py         # Package initialization
+│   │   └── bridge.py           # MAGAT Bridge (MATLAB interface)
+│   └── scripts/                 # User-facing scripts
+│       ├── conversion/          # MATLAB → H5 conversion tools
+│       │   ├── convert_matlab_to_h5.py    # Core conversion logic
+│       │   ├── batch_export_esets.py      # Batch processing
+│       │   ├── append_camcal_to_h5.py     # Camera calibration
+│       │   └── unlock_h5_file.py          # H5 file utilities
+│       └── analysis/            # H5 analysis scripts
+│           ├── engineer_data.py           # Basic analysis
+│           └── engineer_dataset_from_h5.py # Enhanced analysis
 │
 ├── validation/                  # Validation framework (optional)
 │   ├── matlab/                 # MATLAB reference scripts

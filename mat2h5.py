@@ -238,7 +238,7 @@ def get_output_directory():
 
 def run_conversion(data_path, data_type, codebase_path, output_dir):
     """Run the actual conversion using batch_export_esets.py"""
-    script_path = Path(__file__).parent / "scripts" / "conversion" / "batch_export_esets.py"
+    script_path = Path(__file__).parent / "src" / "scripts" / "conversion" / "batch_export_esets.py"
     
     if not script_path.exists():
         print(f"\n✗ Conversion script not found: {script_path}")

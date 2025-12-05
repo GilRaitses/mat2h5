@@ -21,7 +21,7 @@ from typing import Dict, List, Optional
 
 # Script paths (relative to this file)
 CONVERT_SCRIPT = Path(__file__).parent / "convert_matlab_to_h5.py"
-MAT2H5_ROOT = Path(__file__).parent.parent.parent
+MAT2H5_ROOT = Path(__file__).parent.parent.parent.parent
 
 
 def parse_genotype_from_path(eset_path: Path, mat_filename: str) -> Optional[str]:
