@@ -233,4 +233,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- **MAGAT Analyzer**: [Samuel Lab](https://github.com/samuellab) - [MAGATAnalyzer-Matlab-Analysis](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis)
+### MAGAT Analyzer
+
+mat2h5 uses the **MAGAT Analyzer** (Multi Animal Gate and Track Analyzer) codebase:
+
+- **Repository**: [samuellab/MAGATAnalyzer-Matlab-Analysis](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis)
+- **License**: Creative Commons Attribution Share Alike 3.0 United States License
+- **Copyright**: © 2011 Marc Gershow
+- **Citation**: Gershow M, Berck M, Mathew D, Luo L, Kane E, Carlson J, Samuel ADT. Controlling Airborne Chemical Cues For Studying Navigation in Small Animals. Nature Methods. 2012
+
+If you use mat2h5 or MAGAT Analyzer in your research, please cite the above publication.
+
+**License Notice**: Any modification or redistribution of MAGAT Analyzer code must include the original license. See the [MAGAT Analyzer repository](https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis) for full license details.
