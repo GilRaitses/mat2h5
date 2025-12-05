@@ -58,7 +58,12 @@
             justify-content: center;
             align-items: center;
             pointer-events: none;
-            opacity: 0.25;
+        }
+
+        #main-fairy-background .fairy-container {
+            position: relative;
+            display: inline-block;
+            opacity: 0.3;
             mix-blend-mode: screen;
         }
 
@@ -98,7 +103,7 @@
             background-size: 200% 200%;
             animation: swirlGradient 10s linear infinite;
             mix-blend-mode: overlay;
-            opacity: 0.1;
+            opacity: 0.12;
             filter: blur(40px);
             z-index: 0;
             pointer-events: none;
@@ -119,7 +124,7 @@
             background-clip: text;
             background-size: 200% 200%;
             animation: gradientShift 8s ease infinite;
-            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 12px rgba(255, 212, 229, 0.5)) drop-shadow(0 0 20px rgba(229, 244, 255, 0.3));
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 4px rgba(255, 212, 229, 0.2));
             position: relative;
         }
 
@@ -226,8 +231,9 @@
             position: relative;
             z-index: 2;
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-            animation: fadeInFairy 1s ease-in, dissolveFairy 3s ease-in 1s forwards;
+            animation: fadeInFairy 1s ease-in;
             mix-blend-mode: multiply;
+            opacity: 0.4;
         }
 
         @keyframes fadeInFairy {
