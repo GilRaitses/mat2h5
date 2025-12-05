@@ -257,6 +257,7 @@ def run_conversion(data_path, data_type, codebase_path, output_dir):
     env = os.environ.copy()
     env['MAGAT_CODEBASE'] = str(codebase_path)
     env['MAT2H5_ROOT'] = str(Path(__file__).parent)
+    env['PYTHONPATH'] = str(Path(__file__).parent / "src") + os.pathsep + env.get('PYTHONPATH', '')
     
     # Note: convert_matlab_to_h5.py may need MAGAT Bridge
     # If you have it in a specific location, set MAGAT_BRIDGE_PATH

@@ -184,9 +184,10 @@ mat2h5/
 ├── install.py                   # Installation script
 ├── mat2h5.py                   # Main entry point (CLI tool)
 │
-├── mat2h5/                      # Package directory
-│   ├── __init__.py             # Package initialization
-│   └── bridge.py               # MAGAT Bridge (MATLAB interface)
+├── src/                         # Source code
+│   └── mat2h5/                 # Package directory
+│       ├── __init__.py         # Package initialization
+│       └── bridge.py           # MAGAT Bridge (MATLAB interface)
 │
 ├── scripts/                     # User-facing scripts
 │   ├── conversion/              # MATLAB → H5 conversion tools

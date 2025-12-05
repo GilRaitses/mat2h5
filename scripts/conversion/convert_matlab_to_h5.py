@@ -22,13 +22,15 @@ import os
 
 # Import MAGAT Bridge from mat2h5 package
 mat2h5_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(mat2h5_root))
+src_path = mat2h5_root / "src"
+sys.path.insert(0, str(src_path))
 
 try:
     from mat2h5.bridge import MAGATBridge
 except ImportError:
-    # Fallback for direct execution
-    from mat2h5 import MAGATBridge
+    # Fallback: try adding src to path
+    sys.path.insert(0, str(src_path))
+    from mat2h5.bridge import MAGATBridge
 
 
 def export_tier2_magat(bridge, output_file):
