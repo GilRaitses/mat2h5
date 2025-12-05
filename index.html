@@ -217,9 +217,13 @@
         }
 
         #loading-screen.hidden {
-            opacity: 0.3;
-            z-index: -1;
+            opacity: 0.4;
+            z-index: 1;
             pointer-events: none;
+        }
+
+        #loading-screen.hidden .fairy-art {
+            opacity: 0.4;
         }
 
         .fairy-art {
@@ -234,6 +238,7 @@
             animation: fadeInFairy 1s ease-in;
             mix-blend-mode: multiply;
             opacity: 0.4;
+            transition: opacity 2s ease-in-out;
         }
 
         @keyframes fadeInFairy {
