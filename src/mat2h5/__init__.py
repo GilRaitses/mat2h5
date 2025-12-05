@@ -6,7 +6,7 @@ to H5 format for use in Python analysis pipelines.
 """
 
 __version__ = "1.0.0"
-__author__ = "INDYsim Contributors"
+__author__ = "Gil Raitses"
 
 from .bridge import MAGATBridge
 
