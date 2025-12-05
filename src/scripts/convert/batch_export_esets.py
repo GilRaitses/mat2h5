@@ -438,25 +438,33 @@ Examples:
             response = input("Action [Enter to clone, or path]: ").strip()
             
             if not response:
-                # Clone automatically
+                # Clone automatically (if git is available)
                 import subprocess
                 import shutil
                 MAGAT_REPO_URL = "https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git"
                 
-                if shutil.which('git'):
-                    print(f"\nCloning MAGAT codebase to: {default_codebase_path}")
-                    try:
-                        default_codebase_path.parent.mkdir(parents=True, exist_ok=True)
-                        subprocess.check_call([
-                            'git', 'clone', MAGAT_REPO_URL, str(default_codebase_path)
-                        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        codebase_path = default_codebase_path
-                        logger.info(f"Cloned MAGAT codebase to: {codebase_path}")
-                    except subprocess.CalledProcessError:
-                        print("✗ Failed to clone. Please clone manually or provide path.")
-                        return 1
-                else:
-                    print("✗ Git not found. Cannot clone automatically.")
+                if not shutil.which('git'):
+                    print("\n✗ Git is not installed. Cannot clone automatically.")
+                    print("\nPlease either:")
+                    print("  1. Install git and try again")
+                    print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
+                    print("  3. Provide path to existing codebase")
+                    return 1
+                
+                print(f"\nCloning MAGAT codebase to: {default_codebase_path}")
+                try:
+                    default_codebase_path.parent.mkdir(parents=True, exist_ok=True)
+                    subprocess.check_call([
+                        'git', 'clone', MAGAT_REPO_URL, str(default_codebase_path)
+                    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    codebase_path = default_codebase_path
+                    logger.info(f"Cloned MAGAT codebase to: {codebase_path}")
+                except subprocess.CalledProcessError as e:
+                    print(f"\n✗ Failed to clone. Exit code: {e.returncode}")
+                    print("\nPlease either:")
+                    print("  1. Check your internet connection and try again")
+                    print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
+                    print("  3. Provide path to existing codebase")
                     return 1
             else:
                 codebase_path = Path(response).expanduser()

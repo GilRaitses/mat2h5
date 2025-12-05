@@ -391,7 +391,10 @@ def handle_convert_auto(args):
         print("=" * 70)
         print("\nOptions:")
         print("  1. Provide path to existing MAGAT codebase")
-        print("  2. Clone automatically (to parent directory)")
+        if check_git():
+            print("  2. Clone automatically (to parent directory)")
+        else:
+            print("  2. Clone automatically (git not available - install git first)")
         print("  3. Set with: mat2h5 config set magat_codebase /path")
         print()
         
@@ -406,11 +409,23 @@ def handle_convert_auto(args):
             # Save to config
             set_magat_codebase(codebase_path)
         else:
-            # Clone automatically
+            # Clone automatically (if git is available)
+            if not check_git():
+                print("\n✗ Git is not installed. Cannot clone automatically.")
+                print("\nPlease either:")
+                print("  1. Install git and try again")
+                print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
+                print("  3. Provide path to existing codebase")
+                return 1
+            
             print("\nCloning MAGAT codebase to parent directory...")
             codebase_path = clone_magat_codebase()
             if not codebase_path:
-                print("✗ Failed to clone MAGAT codebase")
+                print("\n✗ Failed to clone MAGAT codebase")
+                print("\nPlease either:")
+                print("  1. Check your internet connection and try again")
+                print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
+                print("  3. Provide path to existing codebase")
                 return 1
             # Save to config
             set_magat_codebase(codebase_path)
