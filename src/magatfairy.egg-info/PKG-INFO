@@ -1,3 +1,15 @@
+Metadata-Version: 2.4
+Name: magatfairy
+Version: 0.1.0
+Summary: MAGAT (MATLAB Track Analysis) to H5 conversion CLI and tools
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: h5py
+Requires-Dist: scipy
+Dynamic: license-file
+
 # magatfairy: MATLAB to H5 made easy
 
 magatfairy converts MAGAT (Multi Animal Gate and Track Analyzer) experiments into clean H5 files for Python workflows. It ships the MATLAB bridge, conversion scripts, and validation tools so you can drag in data, run a single command, and get analysis-ready H5 outputs.
@@ -19,24 +31,11 @@ git clone https://github.com/GilRaitses/magatfairy.git
 cd magatfairy
 ```
 
-> No conda or Docker required. Plain Python 3.8+ with pip is enough. A venv is optional but recommended.
-
-### 2. Install Dependencies (and optional venv)
+### 2. Install Dependencies
 
 ```bash
-# optional but recommended
-python -m venv .venv
-# Windows: .\.venv\Scripts\activate
-# mac/Linux: source .venv/bin/activate
-
 python src/install/install.py
 ```
-
-This will install:
-- numpy
-- h5py
-- scipy
-- matlabengine (MATLAB Engine for Python)
 
 This will install:
 - numpy
@@ -51,38 +50,6 @@ python setup.py install
 ```
 
 See: https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html
-
-### 2b. Get the CLI (choose one)
-
-- **Standard machines (recommended):**
-  ```bash
-  # optionally inside a venv
-  pip install -e .
-  magatfairy --help
-  ```
-  Ensure your Python Scripts dir is on PATH:
-  - Windows: `%APPDATA%\Python\Python311\Scripts` or your venv’s `Scripts`
-  - mac/Linux: `$HOME/.local/bin` or your venv’s `bin`
-
-- **Managed / locked-down machines (no PATH changes):**
-  ```bash
-  python -m cli.magatfairy --help
-  python -m cli.magatfairy convert auto /path/to/data
-  ```
-  (Uses the module directly; works even if executables are blocked.)
-
-### Optional system check before running
-- Minimal wiring check (no installs): `python -m cli.magatfairy --help`
-- Dependency check/install: `python src/install/install.py` (reports Python version, git, MATLAB engine, and installs pip deps)
-- Built-in CLI check: `magatfairy systemfairy` (or `python -m cli.magatfairy systemfairy` on locked-down machines)
-
-### MAGAT class folders
-- magatfairy ships bundled MAGAT class folders at `src/matlab/core` and uses them by default (no external download).
-- If you need to override with a different MAGAT codebase, set `MAGAT_CODEBASE` or `magatfairy config set magat_codebase /path/to/codebase`.
-
-### Optional system check before running
-- Minimal wiring check (no installs): `python -m cli.magatfairy --help`
-- Dependency check/install: `python src/install/install.py` (reports Python version, git, MATLAB engine, and installs pip deps)
 
 ### 3. Run the Conversion Tool
 

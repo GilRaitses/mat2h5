@@ -32,25 +32,29 @@ class MAGATBridge:
             magat_codebase_path: Path to MAGAT codebase (Matlab-Track-Analysis-SkanataLab)
                                  Required for loading experiments
         """
-        # Get paths from arguments or environment
+        # Resolve bundled default (self-contained)
+        repo_root = Path(__file__).resolve().parents[2]
+        bundled_core = repo_root / "matlab" / "core"
+
+        def has_required_classes(path: Path) -> bool:
+            return (path / "@DataManager").exists()
+
+        # Resolve inputs; fall back to bundled core if missing DataManager
         if matlab_classes_path is None:
             matlab_classes_path = os.environ.get('MATLAB_CLASSES_PATH')
-        if magat_codebase_path is None:
-            magat_codebase_path = os.environ.get('MAGAT_CODEBASE')
-        
-        if magat_codebase_path is None:
-            raise ValueError(
-                "MAGAT codebase path is required. "
-                "Provide it as argument or set MAGAT_CODEBASE environment variable."
-            )
-        
+
+        candidate = Path(magat_codebase_path) if magat_codebase_path else Path(os.environ.get('MAGAT_CODEBASE') or bundled_core)
+        if not has_required_classes(candidate):
+            candidate = bundled_core
+
         self.matlab_classes_path = Path(matlab_classes_path) if matlab_classes_path else None
-        self.magat_codebase_path = Path(magat_codebase_path)
-        
+        self.magat_codebase_path = candidate
+
         if not self.magat_codebase_path.exists():
             raise FileNotFoundError(
                 f"MAGAT codebase not found: {self.magat_codebase_path}\n"
-                f"Please ensure the codebase is cloned and the path is correct."
+                f"Bundled core expected at: {bundled_core}\n"
+                f"Provide a valid path via argument or MAGAT_CODEBASE environment variable."
             )
         
         # Start MATLAB engine

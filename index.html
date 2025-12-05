@@ -42,6 +42,24 @@
             pointer-events: none;
         }
 
+        #maggot-background {
+            position: fixed;
+            bottom: 6%;
+            left: 8%;
+            min-width: 320px;
+            min-height: 240px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
+            font-size: 5px;
+            line-height: 1;
+            white-space: pre;
+            color: #000;
+            background: transparent;
+            opacity: 0.9;
+            z-index: 2;
+            pointer-events: none;
+            user-select: none;
+        }
+
         #content {
             position: relative;
             z-index: 10;
@@ -57,6 +75,7 @@
             width: 100%;
             max-width: 100%;
             height: 120px;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -112,7 +131,7 @@
         }
 
         #title-gradient-overlay {
-            opacity: 0.05;
+            opacity: 0.12;
             background: conic-gradient(
                 from 0deg,
                 rgba(139, 0, 0, 0.03) 0%,
@@ -121,7 +140,7 @@
                 rgba(120, 0, 20, 0.025) 75%,
                 rgba(139, 0, 0, 0.03) 100%
             );
-            filter: blur(200px);
+            filter: blur(160px);
             animation: spinGradient 140s linear infinite;
         }
 
@@ -424,6 +443,7 @@
 </head>
 <body>
     <div id="fairy-background"></div>
+    <div id="maggot-background"></div>
 
     <div id="content">
         <div id="title-container">
@@ -501,7 +521,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="fairy-frames.js" charset="UTF-8"></script>
+    <script src="docs/assets/fairy-frames.js" charset="UTF-8"></script>
     <script>
         const cinnamorollColors = {
             lightBlue: 0xB8E6FF,
@@ -539,6 +559,40 @@
                 currentFrameIndex = (currentFrameIndex + 1) % framesToUse.length;
                 background.textContent = framesToUse[currentFrameIndex];
             }, 200); // Change frame every 200ms
+        }
+
+        // Render maggot frames without rotating them
+        async function initMaggotBackground() {
+            const background = document.getElementById('maggot-background');
+            if (!background) {
+                console.error('maggot-background element not found');
+                return;
+            }
+
+            try {
+                const resp = await fetch('docs/assets/maggot-frame.js');
+                const rawText = await resp.text();
+
+                // Remove stray bracket lines and chunk evenly to preserve original orientation
+                const allLines = rawText.split(/\r?\n/).filter(line => line.trim() !== '[' && line.trim() !== ']');
+                const frameCount = 4;
+                const linesPerFrame = Math.floor(allLines.length / frameCount);
+
+                const frames = [];
+                for (let i = 0; i < frameCount; i++) {
+                    const frameLines = allLines.slice(i * linesPerFrame, (i + 1) * linesPerFrame);
+                    frames.push(frameLines.join('\n'));
+                }
+
+                let idx = 0;
+                background.textContent = frames[idx];
+                setInterval(() => {
+                    idx = (idx + 1) % frames.length;
+                    background.textContent = frames[idx];
+                }, 220);
+            } catch (err) {
+                console.error('Failed to load maggot frames', err);
+            }
         }
 
         function initTitleLighting() {
@@ -642,6 +696,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initFairyBackground();
+            initMaggotBackground();
             initModalsCloseButtons();
             
             waitForThreeJS(() => {
