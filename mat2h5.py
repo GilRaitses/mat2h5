@@ -12,7 +12,9 @@ Usage:
 
 import sys
 import argparse
+import re
 from pathlib import Path
+from typing import Optional, Tuple
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -31,6 +33,61 @@ def check_matlab_engine():
         return False
 
 
+def detect_data_type(path: Path) -> Tuple[str, Optional[Path]]:
+    """
+    Auto-detect the type of data at the given path.
+    
+    Returns:
+        Tuple of (data_type, detected_path) where:
+        - data_type: 'genotype', 'eset', 'experiment', 'track', or 'unknown'
+        - detected_path: Path to the detected data (may differ from input)
+    """
+    path = Path(path).resolve()
+    
+    if not path.exists():
+        return 'unknown', None
+    
+    # Check if it's a file
+    if path.is_file():
+        # Check if it's a .mat file (experiment)
+        if path.suffix == '.mat':
+            return 'experiment', path
+        # Check if it's a track file
+        if path.suffix == '.mat' and 'track' in path.name.lower():
+            return 'track', path
+        return 'unknown', path
+    
+    # It's a directory - check structure
+    # 1. Check if it's a genotype (root with multiple ESET folders)
+    eset_folders = [d for d in path.iterdir() if d.is_dir() and (d / "matfiles").exists()]
+    if len(eset_folders) > 1:
+        return 'genotype', path
+    
+    # 2. Check if it's a single ESET (has matfiles/ subdirectory)
+    if (path / "matfiles").exists():
+        return 'eset', path
+    
+    # 3. Check if it's a tracks directory (contains track*.mat files)
+    track_files = list(path.glob("track*.mat"))
+    if track_files:
+        return 'track', path
+    
+    # 4. Check if parent is an ESET and this is matfiles/
+    if path.name == "matfiles" and (path.parent / "matfiles").exists():
+        # Check if there's a single .mat file
+        mat_files = list(path.glob("*.mat"))
+        if len(mat_files) == 1:
+            return 'experiment', mat_files[0]
+        return 'eset', path.parent
+    
+    # 5. Check if it contains a single .mat file (experiment)
+    mat_files = list(path.glob("*.mat"))
+    if len(mat_files) == 1:
+        return 'experiment', mat_files[0]
+    
+    return 'unknown', path
+
+
 def create_parser():
     """Create the main argument parser with subcommands"""
     parser = argparse.ArgumentParser(
@@ -38,6 +95,9 @@ def create_parser():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Auto-detect and convert (drag folder into terminal, press Enter)
+  mat2h5 convert auto
+  
   # Convert all ESETs in a directory
   mat2h5 convert batch --root-dir /data/GMR61@GMR61 --output /h5_output --codebase /path/to/magat
   
@@ -80,6 +140,12 @@ Examples:
     unlock_parser = convert_subparsers.add_parser('unlock', help='Unlock a locked H5 file')
     unlock_parser.add_argument('--file', required=True, help='Path to H5 file')
     unlock_parser.add_argument('--force-delete', action='store_true', help='Force delete lock file')
+    
+    # convert auto (drag-and-drop friendly)
+    auto_parser = convert_subparsers.add_parser('auto', help='Auto-detect and convert (drag folder into terminal, press Enter)')
+    auto_parser.add_argument('path', nargs='?', help='Path to data (can drag-and-drop folder here)')
+    auto_parser.add_argument('--output-dir', help='Output directory (default: ./h5_output)')
+    auto_parser.add_argument('--codebase', help='Path to MAGAT codebase (or set MAGAT_CODEBASE env var)')
     
     # Analyze subcommands
     analyze_parser = subparsers.add_parser('analyze', help='Analysis commands')
@@ -168,6 +234,129 @@ def handle_convert_unlock(args):
         sys.argv.append('--force-delete')
     spec.loader.exec_module(module)
     return module.main()
+
+
+def handle_convert_auto(args):
+    """Handle convert auto command - auto-detect data type and process"""
+    import os
+    
+    # Get path from argument or prompt
+    if args.path:
+        input_path = Path(args.path).expanduser()
+    else:
+        print("\n" + "=" * 70)
+        print("Drag-and-Drop Auto Conversion")
+        print("=" * 70)
+        print("\nDrag a folder into this terminal and press Enter,")
+        print("or type a path and press Enter:")
+        user_input = input("  Path: ").strip()
+        if not user_input:
+            print("No path provided. Exiting.")
+            return 1
+        input_path = Path(user_input.strip().strip("'\"")).expanduser()
+    
+    # Auto-detect data type
+    print(f"\nAnalyzing: {input_path}")
+    data_type, detected_path = detect_data_type(input_path)
+    
+    if data_type == 'unknown' or detected_path is None:
+        print(f"\n✗ Could not detect data type for: {input_path}")
+        print("  Expected: genotype directory, ESET folder, experiment file, or tracks directory")
+        return 1
+    
+    print(f"✓ Detected: {data_type}")
+    print(f"  Path: {detected_path}")
+    
+    # Get codebase path
+    codebase_path = args.codebase or os.environ.get('MAGAT_CODEBASE')
+    if not codebase_path:
+        print("\n" + "=" * 70)
+        print("MAGAT Codebase Required")
+        print("=" * 70)
+        print("\nEnter the path to the MAGAT codebase:")
+        print("  (Or set MAGAT_CODEBASE environment variable)")
+        codebase_input = input("  Path: ").strip()
+        if codebase_input:
+            codebase_path = Path(codebase_input).expanduser()
+        else:
+            print("✗ MAGAT codebase path required")
+            return 1
+    
+    codebase_path = Path(codebase_path)
+    if not codebase_path.exists():
+        print(f"✗ MAGAT codebase not found: {codebase_path}")
+        return 1
+    
+    # Get output directory
+    if args.output_dir:
+        output_dir = Path(args.output_dir)
+    else:
+        default_output = Path.cwd() / "h5_output"
+        print(f"\nOutput directory [default: {default_output}]:")
+        output_input = input("  Path: ").strip()
+        if output_input:
+            output_dir = Path(output_input).expanduser()
+        else:
+            output_dir = default_output
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Route to appropriate handler based on detected type
+    print(f"\n" + "=" * 70)
+    print(f"Processing {data_type}: {detected_path.name}")
+    print("=" * 70)
+    
+    if data_type == 'genotype':
+        # Process as genotype (batch)
+        return handle_convert_batch(type('args', (), {
+            'root_dir': str(detected_path),
+            'output_dir': str(output_dir),
+            'codebase': str(codebase_path)
+        })())
+    
+    elif data_type == 'eset':
+        # Process as single ESET
+        import importlib.util
+        script_path = Path(__file__).parent / "src" / "scripts" / "convert" / "batch_export_esets.py"
+        spec = importlib.util.spec_from_file_location("batch_export_esets", script_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.argv = ['batch_export_esets.py', '--eset-dir', str(detected_path),
+                    '--output-dir', str(output_dir), '--codebase', str(codebase_path)]
+        spec.loader.exec_module(module)
+        return module.main()
+    
+    elif data_type == 'experiment':
+        # Process as single experiment
+        # Need to find tracks and bin files
+        mat_file = detected_path
+        eset_dir = mat_file.parent.parent if mat_file.parent.name == "matfiles" else mat_file.parent
+        
+        # Try to find tracks directory
+        timestamp_match = re.search(r'_(\d{12})\.mat$', mat_file.name)
+        if timestamp_match:
+            timestamp = timestamp_match.group(1)
+            genotype_match = re.search(r'^([A-Za-z0-9]+@[A-Za-z0-9]+)_', mat_file.name)
+            if genotype_match:
+                genotype = genotype_match.group(1)
+                tracks_dir = mat_file.parent / f"{genotype}_{timestamp} - tracks"
+                bin_file = eset_dir / f"{mat_file.stem}.bin"
+                
+                if tracks_dir.exists() and bin_file.exists():
+                    return handle_convert_single(type('args', (), {
+                        'mat': str(mat_file),
+                        'tracks': str(tracks_dir),
+                        'bin': str(bin_file),
+                        'output': str(output_dir / f"{mat_file.stem}.h5"),
+                        'codebase': str(codebase_path)
+                    })())
+        
+        print(f"✗ Could not find required files (tracks directory, .bin file) for experiment")
+        print(f"  MAT file: {mat_file}")
+        return 1
+    
+    else:
+        print(f"✗ Unsupported data type: {data_type}")
+        return 1
 
 
 def handle_analyze_engineer(args):
@@ -261,6 +450,7 @@ def main():
         ('convert', 'single'): handle_convert_single,
         ('convert', 'append-camcal'): handle_convert_append_camcal,
         ('convert', 'unlock'): handle_convert_unlock,
+        ('convert', 'auto'): handle_convert_auto,
         ('analyze', 'engineer'): handle_analyze_engineer,
         ('analyze', 'dataset'): handle_analyze_dataset,
         ('validate', 'schema'): handle_validate_schema,

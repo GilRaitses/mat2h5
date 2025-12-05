@@ -214,6 +214,30 @@ mat2h5/
 
 mat2h5 provides a CLI with subcommands for all operations:
 
+#### Quick Start: Auto-Detect (Drag-and-Drop)
+
+The easiest way to use mat2h5 is with auto-detection:
+
+```bash
+# Drag a folder into the terminal and press Enter
+mat2h5 convert auto
+
+# Or provide the path directly
+mat2h5 convert auto /path/to/your/data
+```
+
+The tool will automatically detect:
+- **Genotype** (root directory with multiple ESET folders)
+- **ESET** (single folder with matfiles/ subdirectory)
+- **Experiment** (single .mat file)
+- **Track** (track file or tracks directory)
+
+You'll be prompted for:
+- MAGAT codebase path (or set `MAGAT_CODEBASE` environment variable)
+- Output directory (default: `./h5_output`)
+
+#### Manual Commands
+
 ```bash
 # Conversion commands
 mat2h5 convert batch --root-dir /path/to/data --output-dir /path/to/output --codebase /path/to/magat
