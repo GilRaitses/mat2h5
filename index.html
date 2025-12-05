@@ -395,6 +395,29 @@
             fairyArt.textContent = fairyASCII;
         }
         
+        let loadingStartTime = Date.now();
+        let userClicked = false;
+        const minLoadingTime = 4000; // 4 seconds minimum
+        
+        // Track user clicks
+        document.addEventListener('click', () => {
+            userClicked = true;
+            hideLoadingScreen();
+        }, { once: true });
+        
+        function hideLoadingScreen() {
+            if (!loadingScreen) return;
+            
+            const elapsed = Date.now() - loadingStartTime;
+            const remaining = Math.max(0, minLoadingTime - elapsed);
+            
+            setTimeout(() => {
+                if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                    loadingScreen.classList.add('hidden');
+                }
+            }, remaining);
+        }
+        
         function updateLoading(percent) {
             // Update progress text
             if (loadingProgressText) {
@@ -408,9 +431,7 @@
                 gradient.style.transform = `translate(-25%, -25%) rotate(${rotation}deg)`;
             }
             if (percent >= 100 && loadingScreen) {
-                setTimeout(() => {
-                    loadingScreen.classList.add('hidden');
-                }, 500);
+                hideLoadingScreen();
             }
         }
 
@@ -950,13 +971,6 @@
 
         // Start animation
         animate();
-        
-        // Ensure loading screen hides after animation starts
-        setTimeout(() => {
-            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-                loadingScreen.classList.add('hidden');
-            }
-        }, 300);
 
         // Error handling
         window.addEventListener('error', (e) => {
