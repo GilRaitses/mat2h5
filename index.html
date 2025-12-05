@@ -124,49 +124,6 @@
 
 
 
-        .narrative-labels {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .label {
-            position: absolute;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(0, 0, 0, 0.2);
-            font-size: 0.9rem;
-            opacity: 0;
-            animation: fadeIn 2s ease 2s both;
-            color: #000000;
-            font-weight: 600;
-        }
-
-        .label.matlab {
-            left: 10%;
-            top: 50%;
-            color: #ff6b35;
-        }
-
-        .label.conversion {
-            left: 50%;
-            top: 20%;
-            transform: translateX(-50%);
-            color: #fbbf24;
-        }
-
-        .label.h5 {
-            right: 10%;
-            top: 50%;
-            color: #667eea;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
 
         #loading-screen {
             position: fixed;
@@ -231,12 +188,6 @@
     </div>
 
     <div id="canvas-container"></div>
-    
-    <div class="narrative-labels">
-        <div class="label matlab">MATLAB Data</div>
-        <div class="label conversion">Conversion Pipeline</div>
-        <div class="label h5">H5 Format</div>
-    </div>
     
     <div id="content">
         <h1>mat2h5</h1>
@@ -342,8 +293,8 @@
             group.position.x = -12 + g * 2;
             group.position.y = (g - 0.5) * 4;
             
-            // Genotype container (larger cube)
-            const genotypeGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            // Genotype container (larger sphere)
+            const genotypeGeo = new THREE.SphereGeometry(0.8, 16, 16);
             const genotypeMat = new THREE.MeshStandardMaterial({
                 color: matlabColors[0],
                 emissive: matlabColors[0],
@@ -354,9 +305,9 @@
             const genotype = new THREE.Mesh(genotypeGeo, genotypeMat);
             group.add(genotype);
             
-            // ESET structures inside genotype
+            // ESET structures inside genotype (spheres)
             for (let e = 0; e < 3; e++) {
-                const esetGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+                const esetGeo = new THREE.SphereGeometry(0.3, 12, 12);
                 const esetMat = new THREE.MeshStandardMaterial({
                     color: matlabColors[1],
                     emissive: matlabColors[1],
@@ -387,80 +338,84 @@
 
         updateLoading(60);
 
-        // H5 side: Tree structure with flowing connections (right side)
+        // H5 side: Boid swarms shaped like larvae (right side)
         const h5Structures = [];
         const h5Tree = new THREE.Group();
         h5Tree.position.x = 12;
 
-        // Root H5 file
-        const rootGeo = new THREE.OctahedronGeometry(1, 0);
-        const rootMat = new THREE.MeshPhysicalMaterial({
-            color: h5Colors[0],
-            emissive: h5Colors[0],
-            emissiveIntensity: 0.4,
-            metalness: 0.3,
-            roughness: 0.1,
-            clearcoat: 1.0,
-            clearcoatRoughness: 0.1,
-            transmission: 0.3,
-            opacity: 0.9,
-            transparent: true
-        });
-        const rootH5 = new THREE.Mesh(rootGeo, rootMat);
-        h5Tree.add(rootH5);
-        h5Structures.push({ mesh: rootH5, type: 'root' });
-
-        // Child datasets
-        for (let i = 0; i < 6; i++) {
-            const angle = (i / 6) * Math.PI * 2;
-            const radius = 3;
-            const childGeo = new THREE.TetrahedronGeometry(0.6, 0);
-            const childMat = new THREE.MeshPhysicalMaterial({
-                color: h5Colors[1 + (i % 2)],
-                emissive: h5Colors[1 + (i % 2)],
-                emissiveIntensity: 0.3,
-                metalness: 0.2,
-                roughness: 0.2,
-                clearcoat: 0.8,
-                transmission: 0.4,
-                opacity: 0.85,
+        // Create boid swarm system for larvae
+        const boidCount = 15;
+        const boids = [];
+        
+        // Larva shape: elongated capsule/sphere
+        function createLarvaShape() {
+            const larvaGroup = new THREE.Group();
+            
+            // Main body (elongated sphere)
+            const bodyGeo = new THREE.SphereGeometry(0.15, 8, 8);
+            const bodyMat = new THREE.MeshPhysicalMaterial({
+                color: h5Colors[0],
+                emissive: h5Colors[0],
+                emissiveIntensity: 0.4,
+                metalness: 0.3,
+                roughness: 0.1,
+                clearcoat: 1.0,
+                transmission: 0.3,
+                opacity: 0.9,
                 transparent: true
             });
-            const child = new THREE.Mesh(childGeo, childMat);
-            child.position.set(
-                Math.cos(angle) * radius,
-                Math.sin(angle) * radius * 0.5,
-                0
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.scale.set(1, 2, 1); // Elongate vertically
+            larvaGroup.add(body);
+            
+            // Head (slightly larger)
+            const headGeo = new THREE.SphereGeometry(0.18, 8, 8);
+            const head = new THREE.Mesh(headGeo, bodyMat);
+            head.position.y = 0.3;
+            larvaGroup.add(head);
+            
+            return larvaGroup;
+        }
+        
+        // Initialize boids
+        for (let i = 0; i < boidCount; i++) {
+            const larva = createLarvaShape();
+            larva.position.set(
+                (Math.random() - 0.5) * 4,
+                (Math.random() - 0.5) * 4,
+                (Math.random() - 0.5) * 2
             );
-            h5Tree.add(child);
-            h5Structures.push({ mesh: child, type: 'dataset' });
-
-            // Connection line to root
-            const lineGeo = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, 0, 0),
-                child.position
-            ]);
-            const lineMat = new THREE.LineBasicMaterial({
-                color: h5Colors[0],
-                transparent: true,
-                opacity: 0.3
-            });
-            const line = new THREE.Line(lineGeo, lineMat);
-            h5Tree.add(line);
+            
+            const boid = {
+                mesh: larva,
+                position: larva.position.clone(),
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02
+                ),
+                type: 'larva'
+            };
+            
+            h5Tree.add(larva);
+            boids.push(boid);
+            h5Structures.push({ mesh: larva, type: 'larva', boid: boid });
         }
 
         scene.add(h5Tree);
 
         updateLoading(70);
 
-        // Particle system for data flow
-        const particleCount = 200;
+        // Smoke/dust particle system for data flow
+        const particleCount = 300;
         const particles = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
         const sizes = new Float32Array(particleCount);
         const velocities = new Float32Array(particleCount * 3);
         const states = new Float32Array(particleCount); // 0=matlab, 1=converting, 2=h5
+        const lifetimes = new Float32Array(particleCount);
+        const maxLifetime = 5.0;
 
         const matlabColor = new THREE.Color(matlabColors[0]);
         const h5Color = new THREE.Color(h5Colors[0]);
@@ -475,16 +430,17 @@
             positions[i3 + 1] = source.mesh.position.y + source.group.position.y;
             positions[i3 + 2] = source.mesh.position.z + source.group.position.z;
             
-            // Random velocity toward H5 side
-            velocities[i3] = (Math.random() * 0.1 + 0.05);
-            velocities[i3 + 1] = (Math.random() - 0.5) * 0.05;
-            velocities[i3 + 2] = (Math.random() - 0.5) * 0.05;
+            // Random velocity toward H5 side with turbulence
+            velocities[i3] = (Math.random() * 0.08 + 0.03);
+            velocities[i3 + 1] = (Math.random() - 0.5) * 0.08;
+            velocities[i3 + 2] = (Math.random() - 0.5) * 0.08;
             
             // Start in MATLAB state
             states[i] = 0;
-            sizes[i] = Math.random() * 0.1 + 0.05;
+            sizes[i] = Math.random() * 0.3 + 0.1; // Larger, more visible particles
+            lifetimes[i] = Math.random() * maxLifetime;
             
-            // MATLAB color
+            // MATLAB color (smoke/dust)
             colors[i3] = matlabColor.r;
             colors[i3 + 1] = matlabColor.g;
             colors[i3 + 2] = matlabColor.b;
@@ -494,12 +450,15 @@
         particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         particles.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
+        // Smoke/dust material - more diffuse and wispy
         const particleMaterial = new THREE.PointsMaterial({
-            size: 0.2,
+            size: 0.4,
             vertexColors: true,
             transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending,
+            sizeAttenuation: true,
+            depthWrite: false
         });
 
         const particleSystem = new THREE.Points(particles, particleMaterial);
@@ -576,20 +535,110 @@
                 group.position.y += Math.sin(elapsedTime * 0.5 + gIdx) * 0.01;
                 
                 group.children.forEach((child, cIdx) => {
-                    if (child.geometry && child.geometry.type === 'BoxGeometry') {
+                    if (child.geometry && child.geometry.type === 'SphereGeometry') {
                         child.rotation.x += 0.01;
                         child.rotation.y += 0.01;
                     }
                 });
             });
 
-            // Animate H5 tree structure
-            h5Tree.rotation.y += 0.003;
+            // Animate H5 boid swarms (larvae)
+            const boidSeparation = 1.5;
+            const boidAlignment = 0.5;
+            const boidCohesion = 0.3;
+            const boidSpeed = 0.02;
+            const boidRadius = 3;
+            
             h5Structures.forEach((struct, idx) => {
-                struct.mesh.rotation.x += 0.005;
-                struct.mesh.rotation.y += 0.005;
-                const pulse = 1 + Math.sin(elapsedTime * 2 + idx) * 0.1;
-                struct.mesh.scale.set(pulse, pulse, pulse);
+                if (struct.boid) {
+                    const boid = struct.boid;
+                    const center = new THREE.Vector3(0, 0, 0);
+                    
+                    // Separation: avoid neighbors
+                    const separation = new THREE.Vector3();
+                    let neighborCount = 0;
+                    h5Structures.forEach((other, oIdx) => {
+                        if (other.boid && idx !== oIdx) {
+                            const dist = boid.position.distanceTo(other.boid.position);
+                            if (dist < boidSeparation) {
+                                const diff = new THREE.Vector3()
+                                    .subVectors(boid.position, other.boid.position)
+                                    .normalize()
+                                    .divideScalar(dist);
+                                separation.add(diff);
+                                neighborCount++;
+                            }
+                        }
+                    });
+                    if (neighborCount > 0) {
+                        separation.divideScalar(neighborCount);
+                        separation.normalize();
+                        separation.multiplyScalar(boidSpeed);
+                    }
+                    
+                    // Alignment: match neighbor velocities
+                    const alignment = new THREE.Vector3();
+                    neighborCount = 0;
+                    h5Structures.forEach((other, oIdx) => {
+                        if (other.boid && idx !== oIdx) {
+                            const dist = boid.position.distanceTo(other.boid.position);
+                            if (dist < boidSeparation * 2) {
+                                alignment.add(other.boid.velocity);
+                                neighborCount++;
+                            }
+                        }
+                    });
+                    if (neighborCount > 0) {
+                        alignment.divideScalar(neighborCount);
+                        alignment.normalize();
+                        alignment.multiplyScalar(boidSpeed * boidAlignment);
+                    }
+                    
+                    // Cohesion: move toward center of neighbors
+                    const cohesion = new THREE.Vector3();
+                    neighborCount = 0;
+                    h5Structures.forEach((other, oIdx) => {
+                        if (other.boid && idx !== oIdx) {
+                            const dist = boid.position.distanceTo(other.boid.position);
+                            if (dist < boidSeparation * 2) {
+                                cohesion.add(other.boid.position);
+                                neighborCount++;
+                            }
+                        }
+                    });
+                    if (neighborCount > 0) {
+                        cohesion.divideScalar(neighborCount);
+                        cohesion.sub(boid.position);
+                        cohesion.normalize();
+                        cohesion.multiplyScalar(boidSpeed * boidCohesion);
+                    }
+                    
+                    // Apply forces
+                    boid.velocity.add(separation);
+                    boid.velocity.add(alignment);
+                    boid.velocity.add(cohesion);
+                    
+                    // Limit speed
+                    if (boid.velocity.length() > boidSpeed) {
+                        boid.velocity.normalize().multiplyScalar(boidSpeed);
+                    }
+                    
+                    // Keep within radius
+                    const distFromCenter = boid.position.length();
+                    if (distFromCenter > boidRadius) {
+                        const toCenter = boid.position.clone().normalize().multiplyScalar(-0.01);
+                        boid.velocity.add(toCenter);
+                    }
+                    
+                    // Update position
+                    boid.position.add(boid.velocity);
+                    struct.mesh.position.copy(boid.position);
+                    
+                    // Rotate larva to face direction of movement
+                    if (boid.velocity.length() > 0.001) {
+                        struct.mesh.lookAt(boid.position.clone().add(boid.velocity));
+                    }
+                }
             });
 
             // Apply wind force to MATLAB structures
@@ -598,7 +647,7 @@
                 group.getWorldPosition(groupWorldPos);
                 
                 group.children.forEach((child) => {
-                    if (child.geometry && child.geometry.type === 'BoxGeometry') {
+                    if (child.geometry && child.geometry.type === 'SphereGeometry') {
                         const childWorldPos = new THREE.Vector3();
                         child.getWorldPosition(childWorldPos);
                         const distance = childWorldPos.distanceTo(mouseWorldPos);
@@ -649,10 +698,21 @@
                     velocities[i3 + 2] += direction.z * force * 10;
                 }
                 
+                // Update lifetime
+                lifetimes[i] += delta;
+                
+                // Add turbulence for smoke effect
+                velocities[i3 + 1] += (Math.random() - 0.5) * 0.01 * delta;
+                velocities[i3 + 2] += (Math.random() - 0.5) * 0.01 * delta;
+                
                 // Update position
                 positions[i3] += velocities[i3];
                 positions[i3 + 1] += velocities[i3 + 1];
                 positions[i3 + 2] += velocities[i3 + 2];
+                
+                // Fade out based on lifetime (smoke dissipates)
+                const age = lifetimes[i] / maxLifetime;
+                const opacity = Math.max(0, 1 - age);
                 
                 // State transitions based on X position
                 if (positions[i3] < -5 && states[i] === 0) {
@@ -661,39 +721,43 @@
                 } else if (positions[i3] >= -5 && positions[i3] < 5 && states[i] < 2) {
                     // In conversion zone - accelerate and change color
                     states[i] = 1;
-                    velocities[i3] *= 1.02; // Speed up
+                    velocities[i3] *= 1.01; // Speed up slightly
                     
-                    // Transition color
+                    // Transition color (smoke mixing)
                     const t = (positions[i3] + 5) / 10;
                     const color = new THREE.Color().lerpColors(
                         new THREE.Color(matlabColors[0]),
                         conversionColor,
                         t
                     );
-                    colors[i3] = color.r;
-                    colors[i3 + 1] = color.g;
-                    colors[i3 + 2] = color.b;
+                    colors[i3] = color.r * opacity;
+                    colors[i3 + 1] = color.g * opacity;
+                    colors[i3 + 2] = color.b * opacity;
                 } else if (positions[i3] >= 5 && states[i] < 2) {
                     // Arrived at H5 zone
                     states[i] = 2;
                     const color = new THREE.Color(h5Colors[0]);
-                    colors[i3] = color.r;
-                    colors[i3 + 1] = color.g;
-                    colors[i3 + 2] = color.b;
+                    colors[i3] = color.r * opacity;
+                    colors[i3 + 1] = color.g * opacity;
+                    colors[i3 + 2] = color.b * opacity;
                 }
                 
-                // Reset particles that have passed through
-                if (positions[i3] > 15) {
+                // Update size (smoke expands)
+                sizes[i] = (Math.random() * 0.3 + 0.1) * (1 + age * 0.5);
+                
+                // Reset particles that have passed through or expired
+                if (positions[i3] > 15 || lifetimes[i] > maxLifetime) {
                     // Respawn at random MATLAB structure
                     const source = matlabStructures[Math.floor(Math.random() * matlabStructures.length)];
                     positions[i3] = source.mesh.position.x + source.group.position.x;
                     positions[i3 + 1] = source.mesh.position.y + source.group.position.y;
                     positions[i3 + 2] = source.mesh.position.z + source.group.position.z;
                     
-                    velocities[i3] = Math.random() * 0.1 + 0.05;
-                    velocities[i3 + 1] = (Math.random() - 0.5) * 0.05;
-                    velocities[i3 + 2] = (Math.random() - 0.5) * 0.05;
+                    velocities[i3] = Math.random() * 0.08 + 0.03;
+                    velocities[i3 + 1] = (Math.random() - 0.5) * 0.08;
+                    velocities[i3 + 2] = (Math.random() - 0.5) * 0.08;
                     states[i] = 0;
+                    lifetimes[i] = 0;
                     
                     const matColor = new THREE.Color(matlabColors[0]);
                     colors[i3] = matColor.r;
@@ -704,6 +768,7 @@
             
             particles.attributes.position.needsUpdate = true;
             particles.attributes.color.needsUpdate = true;
+            particles.attributes.size.needsUpdate = true;
 
             // Animate lights
             matlabLight.intensity = 1.5 + Math.sin(elapsedTime) * 0.3;
