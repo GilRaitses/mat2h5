@@ -482,7 +482,7 @@ Examples:
         print("  Set --codebase argument, MAGAT_CODEBASE env var, or use: mat2h5 config set magat_codebase /path")
         return 1
     
-    if dry_run:
+    if args.dry_run:
         print("="*80)
         print("DRY-RUN MODE: Preview Only")
         print("="*80)
@@ -493,9 +493,9 @@ Examples:
     print(f"Output directory: {output_dir}")
     print(f"Convert script: {CONVERT_SCRIPT}")
     print(f"MAGAT codebase: {codebase_path}")
-    if skip_existing:
+    if args.skip_existing:
         print("Skip existing: Enabled")
-    if resume:
+    if args.resume:
         print("Resume: Enabled")
     print()
     
