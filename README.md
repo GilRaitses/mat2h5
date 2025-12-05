@@ -214,9 +214,14 @@ mat2h5/
 
 mat2h5 provides a CLI with subcommands for all operations:
 
-#### Quick Start: Auto-Detect (Drag-and-Drop)
+#### Quick Start: Click-and-Go (Easiest!)
 
-The easiest way to use mat2h5 is with auto-detection:
+**macOS/Linux:** Double-click `mat2h5.command` (or `mat2h5.sh`)  
+**Windows:** Double-click `mat2h5.bat`
+
+This opens a terminal window. Drag your data folder into it and press Enter. H5 files will be saved to `exports/` folder in the mat2h5 repository.
+
+#### Command-Line: Auto-Detect (Drag-and-Drop)
 
 ```bash
 # Drag a folder into the terminal and press Enter
@@ -234,7 +239,7 @@ The tool will automatically detect:
 
 You'll be prompted for:
 - MAGAT codebase path (or set `MAGAT_CODEBASE` environment variable)
-- Output directory (default: `./h5_output`)
+- Output directory (default: `exports/` folder in the mat2h5 repository)
 
 #### Manual Commands
 

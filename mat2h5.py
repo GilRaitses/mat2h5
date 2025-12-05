@@ -287,19 +287,18 @@ def handle_convert_auto(args):
         print(f"✗ MAGAT codebase not found: {codebase_path}")
         return 1
     
-    # Get output directory
+    # Get output directory - default to repo's exports folder
+    repo_root = Path(__file__).parent
+    default_output = repo_root / "exports"
+    
     if args.output_dir:
-        output_dir = Path(args.output_dir)
+        output_dir = Path(args.output_dir).expanduser()
     else:
-        default_output = Path.cwd() / "h5_output"
-        print(f"\nOutput directory [default: {default_output}]:")
-        output_input = input("  Path: ").strip()
-        if output_input:
-            output_dir = Path(output_input).expanduser()
-        else:
-            output_dir = default_output
+        # Use repo's exports folder as default
+        output_dir = default_output
     
     output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"\n✓ Output directory: {output_dir}")
     
     # Route to appropriate handler based on detected type
     print(f"\n" + "=" * 70)
