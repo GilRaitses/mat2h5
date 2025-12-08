@@ -88,17 +88,17 @@ def run_schema_validation(h5_files: List[Tuple[str, Path, Path]], verbose: bool 
         
         if passed:
             results['passed'] += 1
-            print(f"  ✓ PASSED")
+            print(f"  [OK] PASSED")
         else:
             results['failed'] += 1
-            print(f"  ✗ FAILED ({len(errors)} errors)")
+            print(f"  [FAIL] FAILED ({len(errors)} errors)")
             for err in errors[:3]:  # Show first 3 errors
                 print(f"    - {err.message}")
             if len(errors) > 3:
                 print(f"    ... and {len(errors) - 3} more errors")
         
         if warnings and verbose:
-            print(f"  ⚠ {len(warnings)} warnings")
+            print(f"  [WARN] {len(warnings)} warnings")
     
     return results
 
@@ -116,7 +116,7 @@ def print_summary(results: Dict):
         print("\nFailed files:")
         for f in results['files']:
             if not f['passed']:
-                print(f"  ✗ {f['eset']}/{Path(f['h5_file']).name}")
+                print(f"  [FAIL] {f['eset']}/{Path(f['h5_file']).name}")
                 for err in f['errors'][:2]:
                     print(f"      {err}")
     

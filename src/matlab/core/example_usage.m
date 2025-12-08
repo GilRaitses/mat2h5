@@ -56,5 +56,5 @@ fprintf('Frames: %d\n', info.num_frames);
 fprintf('Selected: %d\n', info.selected_count);
 fprintf('========================\n');
 
-fprintf('\n✓ Example complete!\n');
+fprintf('\n[OK] Example complete!\n');
 

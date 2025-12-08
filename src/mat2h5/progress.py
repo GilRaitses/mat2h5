@@ -77,24 +77,27 @@ class ColoredProgress:
         white_end = section_width * 2
         
         # Build progress bar with colors
+        # Use ASCII characters for Windows compatibility
         bar_parts = []
+        filled_char = '#'  # ASCII instead of '█'
+        empty_char = '.'   # ASCII instead of '░'
         
         # Red section (beginning)
         if filled > 0:
             red_filled = min(filled, red_end)
-            bar_parts.append(f"{RED}{'█' * red_filled}{RESET}")
+            bar_parts.append(f"{RED}{filled_char * red_filled}{RESET}")
             if filled > red_end:
                 # White section (middle)
                 white_filled = min(filled - red_end, section_width)
-                bar_parts.append(f"{WHITE}{'█' * white_filled}{RESET}")
+                bar_parts.append(f"{WHITE}{filled_char * white_filled}{RESET}")
                 if filled > white_end:
                     # Blue section (end)
                     blue_filled = filled - white_end
-                    bar_parts.append(f"{BLUE}{'█' * blue_filled}{RESET}")
+                    bar_parts.append(f"{BLUE}{filled_char * blue_filled}{RESET}")
         
         # Empty section
         if empty > 0:
-            bar_parts.append(f"{RESET}{'░' * empty}")
+            bar_parts.append(f"{RESET}{empty_char * empty}")
         
         bar = ''.join(bar_parts)
         
@@ -111,11 +114,20 @@ class ColoredProgress:
         status = f"{self.current}/{self.total} ({progress_pct*100:.1f}%)"
         color = self._get_color()
         
-        # Print progress
-        sys.stdout.write(f"\r{color}{BOLD}[{self.phase.upper()}]{RESET} {bar} {status} {eta_str}")
-        if message:
-            sys.stdout.write(f" | {message}")
-        sys.stdout.flush()
+        # Print progress (handle encoding errors on Windows)
+        try:
+            output = f"\r{color}{BOLD}[{self.phase.upper()}]{RESET} {bar} {status} {eta_str}"
+            if message:
+                output += f" | {message}"
+            sys.stdout.write(output)
+            sys.stdout.flush()
+        except UnicodeEncodeError:
+            # Fallback to ASCII-only output
+            output = f"\r[{self.phase.upper()}] {bar} {status} {eta_str}"
+            if message:
+                output += f" | {message}"
+            sys.stdout.write(output)
+            sys.stdout.flush()
     
     def finish(self, message: str = "Complete!"):
         """Finish progress display"""

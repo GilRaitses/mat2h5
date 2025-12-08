@@ -67,7 +67,7 @@ classdef BehavioralVideoExplorer < handle
             app.CacheManager = CacheManager();
             app.ExportManager = ExportManager();
             
-            fprintf('✓ All managers initialized\n');
+            fprintf('[OK] All managers initialized\n');
         end
         
         function loadExperiment(app, mat_file, tracks_dir, bin_file)
@@ -87,7 +87,7 @@ classdef BehavioralVideoExplorer < handle
             num_tracks = app.DataManager.num_tracks;
             app.TrackManager = TrackManager(num_tracks);
             
-            fprintf('✓ Experiment loaded successfully\n');
+            fprintf('[OK] Experiment loaded successfully\n');
         end
         
         function setRenderParams(app, varargin)

@@ -198,7 +198,7 @@ def clone_magat_codebase(target_path: Optional[Path] = None) -> Optional[Path]:
         Path to cloned codebase, or None if cloning failed
     """
     if not check_git():
-        print("\n✗ Git is not installed. Cannot clone MAGAT codebase automatically.")
+        print("\n[FAIL] Git is not installed. Cannot clone MAGAT codebase automatically.")
         print(f"Please clone manually: {MAGAT_REPO_URL}")
         return None
 
@@ -578,11 +578,11 @@ def handle_convert_auto(args):
     data_type, detected_path = detect_data_type(input_path)
     
     if data_type == 'unknown' or detected_path is None:
-        print(f"\n✗ Could not detect data type for: {input_path}")
+        print(f"\n[FAIL] Could not detect data type for: {input_path}")
         print("  Expected: genotype directory, ESET folder, experiment file, or tracks directory")
         return 1
     
-    print(f"✓ Detected: {data_type}")
+    print(f"[OK] Detected: {data_type}")
     print(f"  Path: {detected_path}")
     
     # Get codebase path (from config, env, prompt, or clone)
@@ -609,14 +609,14 @@ def handle_convert_auto(args):
             # User provided path
             codebase_path = Path(response).expanduser()
             if not codebase_path.exists():
-                print(f"✗ Path does not exist: {codebase_path}")
+                print(f"[FAIL] Path does not exist: {codebase_path}")
                 return 1
             # Save to config
             set_magat_codebase(codebase_path)
         else:
             # Clone automatically (if git is available)
             if not check_git():
-                print("\n✗ Git is not installed. Cannot clone automatically.")
+                print("\n[FAIL] Git is not installed. Cannot clone automatically.")
                 print("\nPlease either:")
                 print("  1. Install git and try again")
                 print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
@@ -626,7 +626,7 @@ def handle_convert_auto(args):
             print("\nCloning MAGAT codebase to parent directory...")
             codebase_path = clone_magat_codebase()
             if not codebase_path:
-                print("\n✗ Failed to clone MAGAT codebase")
+                print("\n[FAIL] Failed to clone MAGAT codebase")
                 print("\nPlease either:")
                 print("  1. Check your internet connection and try again")
                 print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
@@ -637,7 +637,7 @@ def handle_convert_auto(args):
     
     codebase_path = Path(codebase_path)
     if not codebase_path.exists():
-        print(f"✗ MAGAT codebase not found: {codebase_path}")
+        print(f"[FAIL] MAGAT codebase not found: {codebase_path}")
         return 1
     
     # Get output directory - default to repo's exports folder or config
@@ -652,7 +652,7 @@ def handle_convert_auto(args):
         output_dir = Path(default_output)
     
     output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"\n✓ Output directory: {output_dir}")
+    print(f"\n[OK] Output directory: {output_dir}")
     
     # Route to appropriate handler based on detected type
     print(f"\n" + "=" * 70)
@@ -720,12 +720,12 @@ def handle_convert_auto(args):
                         'codebase': str(codebase_path)
                     })())
         
-        print(f"✗ Could not find required files (tracks directory, .bin file) for experiment")
+        print(f"[FAIL] Could not find required files (tracks directory, .bin file) for experiment")
         print(f"  MAT file: {mat_file}")
         return 1
     
     else:
-        print(f"✗ Unsupported data type: {data_type}")
+        print(f"[FAIL] Unsupported data type: {data_type}")
         return 1
 
 
@@ -828,11 +828,11 @@ def main():
             if args.key == 'magat_codebase':
                 from mat2h5.config import set_magat_codebase
                 set_magat_codebase(Path(args.value))
-                print(f"✓ Set MAGAT codebase to: {args.value}")
+                print(f"[OK] Set MAGAT codebase to: {args.value}")
             elif args.key == 'default_output':
                 from mat2h5.config import set_default_output
                 set_default_output(Path(args.value))
-                print(f"✓ Set default output to: {args.value}")
+                print(f"[OK] Set default output to: {args.value}")
             return 0
         
         elif args.config_command == 'get':

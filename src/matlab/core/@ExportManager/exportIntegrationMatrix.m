@@ -149,10 +149,10 @@ function exportIntegrationMatrix(obj, renderer, data, track_idx, output_path)
     if nargin >= 5 && ~isempty(output_path)
         fprintf('Saving to: %s\n', output_path);
         exportgraphics(fig, output_path, 'Resolution', 300);
-        fprintf('✓ Integration matrix saved\n');
+        fprintf('[OK] Integration matrix saved\n');
     end
     
-    fprintf('✓ Integration matrix rendered\n');
+    fprintf('[OK] Integration matrix rendered\n');
     fprintf('=== COMPLETE ===\n');
 end
 

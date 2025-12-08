@@ -112,12 +112,12 @@ def check_expected_fields(h5_file):
     # Print results
     print("FOUND:")
     for path, desc in sorted(found.items()):
-        print(f"  ✓ {path}: {desc}")
+        print(f"  [OK] {path}: {desc}")
     
     print("\nMISSING:")
     if missing:
         for path, desc in sorted(missing.items()):
-            print(f"  ✗ {path}: {desc}")
+            print(f"  [FAIL] {path}: {desc}")
     else:
         print("  (none)")
     
@@ -164,11 +164,11 @@ def check_track_structure(h5_file):
             if full_path in h5_file:
                 obj = h5_file[full_path]
                 if isinstance(obj, h5py.Dataset):
-                    print(f"  ✓ {field}: shape={obj.shape}, dtype={obj.dtype}")
+                    print(f"  [OK] {field}: shape={obj.shape}, dtype={obj.dtype}")
                 else:
-                    print(f"  ✓ {field}: (group)")
+                    print(f"  [OK] {field}: (group)")
             else:
-                print(f"  ✗ {field}: NOT FOUND (expected {expected_shape})")
+                print(f"  [FAIL] {field}: NOT FOUND (expected {expected_shape})")
 
 
 def main():
@@ -226,9 +226,9 @@ def main():
         print(f"Fields missing: {len(missing)}")
         
         if missing:
-            print("\n⚠ ACTION REQUIRED: Update H5 export or validation scripts to resolve missing fields")
+            print("\n[WARN] ACTION REQUIRED: Update H5 export or validation scripts to resolve missing fields")
         else:
-            print("\n✓ All expected fields found - ready for validation")
+            print("\n[OK] All expected fields found - ready for validation")
     
     return 0 if not missing else 1
 

@@ -85,10 +85,10 @@ def main():
     for h5_path in all_h5_files:
         if check_has_camcal(h5_path):
             have_camcal.append(h5_path)
-            print(f"  ✓ {h5_path.name}")
+            print(f"  [OK] {h5_path.name}")
         else:
             need_camcal.append(h5_path)
-            print(f"  ✗ {h5_path.name} (needs camcal)")
+            print(f"  [FAIL] {h5_path.name} (needs camcal)")
     
     print(f"\nHave camcal: {len(have_camcal)}")
     print(f"Need camcal: {len(need_camcal)}")
@@ -130,7 +130,7 @@ def main():
         print(f"Validating: {h5_path.name}...", end=" ")
         passed, results = validate_h5_schema(h5_path)
         validation_results.append((h5_path, passed, results))
-        print("✓ PASS" if passed else "✗ FAIL")
+        print("[OK] PASS" if passed else "[FAIL] FAIL")
     
     passed_count = sum(1 for _, passed, _ in validation_results if passed)
     print(f"\nValidation: {passed_count}/{len(all_h5_files)} passed")
@@ -162,7 +162,7 @@ def main():
         shutil.copy2(h5_path, dest)
         copied.append(dest)
     
-    print(f"\n✓ Copied {len(copied)} files to: {output_dir}")
+    print(f"\n[OK] Copied {len(copied)} files to: {output_dir}")
     
     # Summary
     print()
@@ -174,7 +174,7 @@ def main():
     print(f"Files copied to INDYsim: {len(copied)}")
     print(f"Output directory: {output_dir}")
     print()
-    print("✓ ALL EXPERIMENTS VALIDATED AND READY FOR SIMULATION")
+    print("[OK] ALL EXPERIMENTS VALIDATED AND READY FOR SIMULATION")
     
     return 0
 

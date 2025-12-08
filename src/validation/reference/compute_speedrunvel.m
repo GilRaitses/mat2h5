@@ -22,13 +22,13 @@ function [SpeedRunVel, times_out] = compute_speedrunvel(shead, smid, xpos, ypos,
 %       HeadUnitVec = normalized(shead - smid)
 %       VelocityVec = normalized displacement
 %       SpeedRun = ||displacement|| / dt
-%       CosThetaFactor = VelocityVec · HeadUnitVec
-%       SpeedRunVel = SpeedRun × CosThetaFactor
+%       CosThetaFactor = VelocityVec . HeadUnitVec
+%       SpeedRunVel = SpeedRun * CosThetaFactor
 %
 %   Interpretation:
-%       SpeedRunVel > 0  →  Forward movement (velocity aligned with head)
-%       SpeedRunVel < 0  →  Reverse crawl (velocity opposite to head)
-%       SpeedRunVel = 0  →  Stationary or perpendicular movement
+%       SpeedRunVel > 0  ->  Forward movement (velocity aligned with head)
+%       SpeedRunVel < 0  ->  Reverse crawl (velocity opposite to head)
+%       SpeedRunVel = 0  ->  Stationary or perpendicular movement
 %
 %   Inputs:
 %       shead          - Head positions, shape (2, N)
@@ -71,7 +71,7 @@ N = length(times) - 1;
 % Use HeadUnitVec at each frame (truncate to match velocity length)
 CosThetaFactor = sum(VelocityVec .* HeadUnitVec(:, 1:N), 1);
 
-% SpeedRunVel = speed × cos(theta)
+% SpeedRunVel = speed * cos(theta)
 SpeedRunVel = speed .* CosThetaFactor;
 
 % Times correspond to the first point of each interval

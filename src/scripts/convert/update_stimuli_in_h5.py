@@ -39,17 +39,18 @@ sys.path.insert(0, str(src_path))
 from mat2h5.bridge import MAGATBridge
 
 
-def find_mat_file_for_h5(h5_file: Path) -> Optional[Path]:
+def find_mat_file_for_h5(h5_file: Path, genotype_dir: Optional[Path] = None) -> Optional[Path]:
     """
     Find the corresponding .mat file for an H5 file.
     
     Looks for .mat files with the same base name in:
     1. Same directory as H5 file
     2. Parent directories (matfiles/, etc.)
-    3. Sibling directories
+    3. If genotype_dir provided, search in its ESET subdirectories
     
     Args:
         h5_file: Path to H5 file
+        genotype_dir: Optional genotype directory to search in
         
     Returns:
         Path to .mat file if found, None otherwise
@@ -80,6 +81,16 @@ def find_mat_file_for_h5(h5_file: Path) -> Optional[Path]:
         if mat_file.exists():
             return mat_file
     
+    # If genotype_dir provided, search in its ESET subdirectories
+    if genotype_dir and genotype_dir.exists():
+        for eset_dir in genotype_dir.iterdir():
+            if eset_dir.is_dir():
+                matfiles_dir = eset_dir / "matfiles"
+                if matfiles_dir.exists():
+                    mat_file = matfiles_dir / f"{base_name}.mat"
+                    if mat_file.exists():
+                        return mat_file
+    
     return None
 
 
@@ -87,22 +98,44 @@ def find_tracks_and_bin_files(mat_file: Path) -> Tuple[Optional[Path], Optional[
     """
     Find tracks directory and .bin file for a .mat file.
     
+    Matches the structure used in batch_export_esets.py:
+    - Tracks: matfiles/{genotype}_{timestamp} - tracks
+    - Bin: ESET root/{base_name}.bin
+    
     Args:
         mat_file: Path to .mat file
         
     Returns:
         Tuple of (tracks_dir, bin_file) paths, or (None, None) if not found
     """
+    import re
+    
     base_name = mat_file.stem
     
-    # Try same directory
+    # Extract genotype and timestamp from filename
+    # Format: GMR61@GMR61_T_Re_Sq_0to250PWM_30#C_Bl_7PWM_202510291652
+    genotype_match = re.search(r'^([A-Za-z0-9]+@[A-Za-z0-9]+)_', base_name)
+    timestamp_match = re.search(r'_(\d{12})\.mat$', mat_file.name) or re.search(r'_(\d{12})$', base_name)
+    
+    # Try structure: matfiles/{genotype}_{timestamp} - tracks
+    if genotype_match and timestamp_match:
+        genotype = genotype_match.group(1)
+        timestamp = timestamp_match.group(1)
+        tracks_name = f"{genotype}_{timestamp} - tracks"
+        tracks_dir = mat_file.parent / tracks_name
+        bin_file = mat_file.parent.parent / f"{base_name}.bin"  # ESET root level
+        
+        if tracks_dir.exists() and bin_file.exists():
+            return tracks_dir, bin_file
+    
+    # Fallback: try same directory
     tracks_dir = mat_file.parent / f"{base_name} - tracks"
     bin_file = mat_file.parent / f"{base_name}.bin"
     
     if tracks_dir.exists() and bin_file.exists():
         return tracks_dir, bin_file
     
-    # Try parent directory
+    # Fallback: try parent directory
     parent = mat_file.parent.parent
     tracks_dir = parent / f"{base_name} - tracks"
     bin_file = parent / f"{base_name}.bin"
@@ -113,13 +146,31 @@ def find_tracks_and_bin_files(mat_file: Path) -> Tuple[Optional[Path], Optional[
     return None, None
 
 
-def update_stimuli_in_h5(h5_file: Path, mat_file: Optional[Path] = None) -> bool:
+def check_needs_fix(h5_file: Path) -> bool:
+    """Check if an H5 file needs stimulus data fix."""
+    try:
+        with h5py.File(h5_file, 'r') as f:
+            if 'stimulus' not in f:
+                return True
+            stim_grp = f['stimulus']
+            num_cycles = int(stim_grp.attrs.get('num_cycles', 0))
+            if 'onset_frames' in stim_grp:
+                onset_count = len(stim_grp['onset_frames']) if stim_grp['onset_frames'].size > 0 else 0
+            else:
+                onset_count = 0
+            return num_cycles == 0 or onset_count == 0
+    except:
+        return True
+
+
+def update_stimuli_in_h5(h5_file: Path, mat_file: Optional[Path] = None, skip_if_valid: bool = True, genotype_dir: Optional[Path] = None) -> bool:
     """
     Update stimulus data in an H5 file.
     
     Args:
         h5_file: Path to H5 file to update
         mat_file: Path to source .mat file (auto-detected if None)
+        skip_if_valid: If True, skip files that already have valid stimulus data
         
     Returns:
         True if successful, False otherwise
@@ -128,9 +179,14 @@ def update_stimuli_in_h5(h5_file: Path, mat_file: Optional[Path] = None) -> bool
         print(f"[ERROR] H5 file does not exist: {h5_file}")
         return False
     
+    # Check if file already has valid stimulus data
+    if skip_if_valid and not check_needs_fix(h5_file):
+        print(f"[SKIP] {h5_file.name} already has valid stimulus data")
+        return True
+    
     # Find .mat file if not provided
     if mat_file is None:
-        mat_file = find_mat_file_for_h5(h5_file)
+        mat_file = find_mat_file_for_h5(h5_file, genotype_dir)
         if mat_file is None:
             print(f"[ERROR] Could not find .mat file for: {h5_file.name}")
             return False
@@ -255,31 +311,59 @@ Examples:
         else:
             h5_files = find_h5_files_in_dir(genotype_dir)
         print(f"Found {len(h5_files)} H5 files for genotype {genotype_dir.name}")
+        
+        # Process all files
+        print(f"\nProcessing {len(h5_files)} H5 files...")
+        success_count = 0
+        fail_count = 0
+        
+        # Pass genotype_dir to update function
+        for i, h5_file in enumerate(h5_files, 1):
+            print(f"\n[{i}/{len(h5_files)}] {h5_file.name}")
+            if update_stimuli_in_h5(h5_file, genotype_dir=genotype_dir):
+                success_count += 1
+            else:
+                fail_count += 1
+        
+        print(f"\n{'='*70}")
+        print(f"SUMMARY")
+        print(f"{'='*70}")
+        print(f"  Success: {success_count}")
+        print(f"  Failed:  {fail_count}")
+        print(f"  Total:   {len(h5_files)}")
+        
+        return 0 if fail_count == 0 else 1
     
     if not h5_files:
         print("[ERROR] No H5 files found")
         return 1
     
-    # Process all files
-    print(f"\nProcessing {len(h5_files)} H5 files...")
-    success_count = 0
-    fail_count = 0
+    # Process all files (skip genotype_dir case as it's handled above)
+    if args.genotype_dir:
+        # Already handled above
+        pass
+    else:
+        print(f"\nProcessing {len(h5_files)} H5 files...")
+        success_count = 0
+        fail_count = 0
+        
+        for i, h5_file in enumerate(h5_files, 1):
+            print(f"\n[{i}/{len(h5_files)}] {h5_file.name}")
+            if update_stimuli_in_h5(h5_file):
+                success_count += 1
+            else:
+                fail_count += 1
+        
+        print(f"\n{'='*70}")
+        print(f"SUMMARY")
+        print(f"{'='*70}")
+        print(f"  Success: {success_count}")
+        print(f"  Failed:  {fail_count}")
+        print(f"  Total:   {len(h5_files)}")
+        
+        return 0 if fail_count == 0 else 1
     
-    for i, h5_file in enumerate(h5_files, 1):
-        print(f"\n[{i}/{len(h5_files)}] {h5_file.name}")
-        if update_stimuli_in_h5(h5_file):
-            success_count += 1
-        else:
-            fail_count += 1
-    
-    print(f"\n{'='*70}")
-    print(f"SUMMARY")
-    print(f"{'='*70}")
-    print(f"  Success: {success_count}")
-    print(f"  Failed:  {fail_count}")
-    print(f"  Total:   {len(h5_files)}")
-    
-    return 0 if fail_count == 0 else 1
+    return 0
 
 
 if __name__ == "__main__":

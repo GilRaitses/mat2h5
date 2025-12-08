@@ -41,12 +41,12 @@ function loadExperiment(obj, mat_file, tracks_dir, bin_file)
     end
     obj.eset.expt(1).track = obj.tracks;
     
-    fprintf('✓ Loaded %d tracks\n', length(obj.tracks));
+    fprintf('[OK] Loaded %d tracks\n', length(obj.tracks));
     
     % CRITICAL: Interpolate tracks to prevent drift
     fprintf('Interpolating tracks...\n');
     obj.tracks = obj.preprocessTrackInterpolation(obj.tracks);
-    fprintf('✓ Interpolation complete\n');
+    fprintf('[OK] Interpolation complete\n');
     
     % Open FID binary (if method exists)
     obj.fid = -1;
@@ -58,7 +58,7 @@ function loadExperiment(obj, mat_file, tracks_dir, bin_file)
             obj.camcalinfo = obj.eset.expt(1).camcalinfo;
             
             if obj.fid > 0
-                fprintf('✓ FID opened: %d\n', obj.fid);
+                fprintf('[OK] FID opened: %d\n', obj.fid);
             else
                 warning('DataManager:FIDError', 'FID access failed');
             end
@@ -78,7 +78,7 @@ function loadExperiment(obj, mat_file, tracks_dir, bin_file)
             led_idx = find(strcmpi({obj.eset.expt(1).globalQuantity.fieldname}, 'led1Val'));
             if ~isempty(led_idx)
                 obj.led_data = obj.eset.expt(1).globalQuantity(led_idx).yData;
-                fprintf('✓ LED data loaded: %d frames\n', length(obj.led_data));
+                fprintf('[OK] LED data loaded: %d frames\n', length(obj.led_data));
             end
         end
     catch ME

@@ -1,0 +1,74 @@
+2025-12-08 15:48:01,501 - INFO - Using MAGAT codebase: D:\Matlab-Track-Analysis-MirnaLab
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\magatfairy\src\cli\magatfairy.py", line 13, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "D:\magatfairy\src\magatfairy_app\main.py", line 874, in main
+    rc = handler(args)
+         ^^^^^^^^^^^^^
+  File "D:\magatfairy\src\magatfairy_app\main.py", line 664, in handle_convert_auto
+    return handle_convert_batch(type('args', (), {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\magatfairy\src\magatfairy_app\main.py", line 514, in handle_convert_batch
+    return module.main()
+           ^^^^^^^^^^^^^
+  File "D:\magatfairy\src\scripts\convert\batch_export_esets.py", line 542, in main
+    all_results = process_genotype(root_dir, output_dir, codebase_path,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\magatfairy\src\scripts\convert\batch_export_esets.py", line 337, in process_genotype
+    progress.update(0, f"Processing: {base_name}")
+  File "D:\magatfairy\src\mat2h5\progress.py", line 43, in update
+    self._display(message)
+  File "D:\magatfairy\src\mat2h5\progress.py", line 115, in _display
+    sys.stdout.write(f"\r{color}{BOLD}[{self.phase.upper()}]{RESET} {bar} {status} {eta_str}")
+  File "C:\Program Files\Python311\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 30-89: character maps to <undefined>
+============================================================
+systemfairy: environment check
+============================================================
+Configured MAGAT codebase (config): D:\Matlab-Track-Analysis-MirnaLab
+Bundled magatfairy class folders: D:\magatfairy\matlab\core
+[OK] Bundled magatfairy class folders: D:\magatfairy\matlab\core
+[OK] MAGAT Analyzer codebase: D:\Matlab-Track-Analysis-MirnaLab
+[OK] Python >= 3.8: 3.11.8
+[OK] git available (for auto-clone): C:\Program Files\Git\cmd\git.EXE
+[OK] MATLAB Engine importable: ok
+
+All required checks passed.
+
+Analyzing: D:\rawdata\GMR61@GMR61
+[OK] Detected: genotype
+  Path: D:\rawdata\GMR61@GMR61
+
+[OK] Output directory: D:\magatfairy\exports
+
+======================================================================
+Processing genotype: GMR61@GMR61
+======================================================================
+================================================================================
+BATCH EXPORT: MATLAB TO H5 CONVERSION
+================================================================================
+Output directory: D:\magatfairy\exports
+Convert script: D:\magatfairy\src\scripts\convert\convert_matlab_to_h5.py
+MAGAT codebase: D:\Matlab-Track-Analysis-MirnaLab
+
+
+[91m[1m======================================================================
+BEGINNING: Processing Root Directory: GMR61@GMR61
+======================================================================[0m
+
+Found 4 ESET folders
+  Found 4 .mat files in matfiles/
+  Found 4 .mat files in matfiles/
+  Found 2 .mat files in matfiles/
+  Found 4 .mat files in matfiles/
+Found 14 total experiments
+
+[97m[1m======================================================================
+PROCESSING: Converting Experiments
+======================================================================[0m
+

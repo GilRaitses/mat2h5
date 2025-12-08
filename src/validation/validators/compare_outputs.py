@@ -260,8 +260,8 @@ def generate_report(
    - Loaded tracks from `*-tracks/` subdirectory
    - Computed `lengthPerPixel` from camera calibration
    - Computed `HeadUnitVec`, `VelocityVec`, `SpeedRun`, `CosThetaFactor`
-   - Computed `SpeedRunVel = SpeedRun × CosThetaFactor`
-   - Detected reversals where `SpeedRunVel < 0` for ≥ 3 seconds
+   - Computed `SpeedRunVel = SpeedRun * CosThetaFactor`
+   - Detected reversals where `SpeedRunVel < 0` for >= 3 seconds
 
 2. **Python Pipeline:**
    - Loaded experiment from `.h5` file in `h5_exports/`
@@ -292,7 +292,7 @@ MATLAB reference implementation when processing the same experimental data.
 
 The `engineer_data.py` pipeline has been validated for:
 - SpeedRunVel computation (dot product method)
-- Reverse crawl detection (SpeedRunVel < 0 for ≥ 3 seconds)
+- Reverse crawl detection (SpeedRunVel < 0 for >= 3 seconds)
 
 This validation was performed on actual larval tracking data, not synthetic test cases.
 """

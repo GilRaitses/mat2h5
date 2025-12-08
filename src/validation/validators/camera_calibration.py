@@ -50,11 +50,11 @@ class CameraCalibration:
         cam_points = np.column_stack([self.camx, self.camy])
         real_points = np.column_stack([self.realx, self.realy])
         
-        # Camera → Real (c2r)
+        # Camera -> Real (c2r)
         self._c2rX = LinearNDInterpolator(cam_points, self.realx)
         self._c2rY = LinearNDInterpolator(cam_points, self.realy)
         
-        # Real → Camera (r2c)
+        # Real -> Camera (r2c)
         self._r2cX = LinearNDInterpolator(real_points, self.camx)
         self._r2cY = LinearNDInterpolator(real_points, self.camy)
     
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     real_x, real_y = calib.cam_to_real(test_cam_x, test_cam_y)
     print(f"\nTest conversion (cam → real):")
     for i in range(len(test_cam_x)):
-        print(f"  ({test_cam_x[i]}, {test_cam_y[i]}) pixels → ({real_x[i]:.4f}, {real_y[i]:.4f}) cm")
+        print(f"  ({test_cam_x[i]}, {test_cam_y[i]}) pixels -> ({real_x[i]:.4f}, {real_y[i]:.4f}) cm")
     
     # Round-trip test
     cam_x_back, cam_y_back = calib.real_to_cam(real_x, real_y)

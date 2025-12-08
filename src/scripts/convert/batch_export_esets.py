@@ -346,9 +346,9 @@ def process_genotype(root_dir: Path, output_dir: Path, codebase_path: Path = Non
             completed_list.append(base_name)
             if resume:
                 save_progress(output_dir, completed_list)
-            progress.update(1, f"✓ {base_name}")
+            progress.update(1, f"[OK] {base_name}")
         else:
-            progress.update(1, f"✗ {base_name} failed")
+            progress.update(1, f"[FAIL] {base_name} failed")
     
     progress.finish("All experiments processed")
     
@@ -444,7 +444,7 @@ Examples:
                 MAGAT_REPO_URL = "https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git"
                 
                 if not shutil.which('git'):
-                    print("\n✗ Git is not installed. Cannot clone automatically.")
+                    print("\n[FAIL] Git is not installed. Cannot clone automatically.")
                     print("\nPlease either:")
                     print("  1. Install git and try again")
                     print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
@@ -460,7 +460,7 @@ Examples:
                     codebase_path = default_codebase_path
                     logger.info(f"Cloned MAGAT codebase to: {codebase_path}")
                 except subprocess.CalledProcessError as e:
-                    print(f"\n✗ Failed to clone. Exit code: {e.returncode}")
+                    print(f"\n[FAIL] Failed to clone. Exit code: {e.returncode}")
                     print("\nPlease either:")
                     print("  1. Check your internet connection and try again")
                     print("  2. Clone manually: git clone https://github.com/samuellab/MAGATAnalyzer-Matlab-Analysis.git")
@@ -469,7 +469,7 @@ Examples:
             else:
                 codebase_path = Path(response).expanduser()
                 if not codebase_path.exists():
-                    print(f"✗ Path does not exist: {codebase_path}")
+                    print(f"[FAIL] Path does not exist: {codebase_path}")
                     return 1
     
     if codebase_path:
@@ -527,9 +527,9 @@ Examples:
             all_results.append(result)
             
             if result.get('success'):
-                progress.update(1, f"✓ {file_info['base_name']}")
+                progress.update(1, f"[OK] {file_info['base_name']}")
             else:
-                progress.update(1, f"✗ {file_info['base_name']} failed")
+                progress.update(1, f"[FAIL] {file_info['base_name']} failed")
         
         progress.finish()
     elif args.root_dir:
@@ -566,7 +566,7 @@ Examples:
             size = r.get('file_size_mb', 0)
             total_size += size
             status = "(skipped)" if r.get('skipped') else "(converted)"
-            print(f"  ✓ {r['base_name']} {status} - {size:.1f} MB")
+            print(f"  [OK] {r['base_name']} {status} - {size:.1f} MB")
         if len(successful) > 10:
             print(f"  ... and {len(successful) - 10} more")
         print(f"\n  Total size: {total_size:.1f} MB")
@@ -575,7 +575,7 @@ Examples:
         print("\nFailed exports:")
         for r in failed:
             error = r.get('error', 'Unknown error')
-            print(f"  ✗ {r['base_name']}: {error}")
+            print(f"  [FAIL] {r['base_name']}: {error}")
     
     print(f"\nOutput directory: {output_dir}")
     if logger:

@@ -17,18 +17,18 @@ def check_python_version():
         print("ERROR: Python 3.8 or higher is required.")
         print(f"Current version: {sys.version}")
         sys.exit(1)
-    print(f"✓ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    print(f"[OK] Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
 
 def check_git():
     """Check if git is installed"""
     try:
         result = subprocess.run(['git', '--version'], capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"✓ Git installed: {result.stdout.strip()}")
+            print(f"[OK] Git installed: {result.stdout.strip()}")
             return True
     except FileNotFoundError:
         pass
-    print("⚠ Git not found (optional, needed for cloning MAGAT codebase)")
+    print("[WARN] Git not found (optional, needed for cloning MAGAT codebase)")
     return False
 
 def check_matlab_engine():
@@ -38,13 +38,13 @@ def check_matlab_engine():
         print("Testing MATLAB Engine connection...")
         eng = matlab.engine.start_matlab()
         eng.quit()
-        print("✓ MATLAB Engine is working!")
+        print("[OK] MATLAB Engine is working!")
         return True
     except ImportError:
-        print("⚠ MATLAB Engine not found")
+        print("[WARN] MATLAB Engine not found")
         return False
     except Exception as e:
-        print(f"⚠ MATLAB Engine test failed: {e}")
+        print(f"[WARN] MATLAB Engine test failed: {e}")
         return False
 
 
@@ -69,7 +69,7 @@ def install_requirements():
         ])
         
         print("-" * 60)
-        print("✓ All packages installed successfully!")
+        print("[OK] All packages installed successfully!")
         return True
         
     except subprocess.CalledProcessError as e:
@@ -104,9 +104,9 @@ def main():
         print("Installation complete!")
         print()
         if matlab_ok:
-            print("✓ All checks passed!")
+            print("[OK] All checks passed!")
         else:
-            print("⚠ MATLAB Engine check failed.")
+            print("[WARN] MATLAB Engine check failed.")
             print("  You may need to install it manually:")
             print("  cd matlabroot/extern/engines/python")
             print("  python setup.py install")

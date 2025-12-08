@@ -304,18 +304,18 @@ def print_results(results: List[ValidationResult], verbose: bool = False):
     if errors:
         print(f"\nERRORS ({len(errors)}):")
         for r in errors:
-            print(f"  ✗ {r.message}")
+            print(f"  [FAIL] {r.message}")
     
     if warnings:
         print(f"\nWARNINGS ({len(warnings)}):")
         for r in warnings:
-            print(f"  ⚠ {r.message}")
+            print(f"  [WARN] {r.message}")
     
     if verbose:
         print(f"\nPASSED ({len([r for r in results if r.passed])}):")
         for r in results:
             if r.passed and r.severity == 'info':
-                print(f"  ✓ {r.message}")
+                print(f"  [OK] {r.message}")
     
     print(f"\n{'='*60}")
     if not errors:

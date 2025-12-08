@@ -457,14 +457,14 @@ def print_results(results: List[ComparisonResult], verbose: bool = False):
     if failed:
         print(f"\nFAILED ({len(failed)}):")
         for r in failed:
-            print(f"  ✗ {r.field_name}: {r.message}")
+            print(f"  [FAIL] {r.field_name}: {r.message}")
             print(f"      MATLAB: {r.matlab_source}")
             print(f"      H5:     {r.h5_source}")
     
     if verbose or not failed:
         print(f"\nPASSED ({len(passed)}):")
         for r in passed:
-            print(f"  ✓ {r.field_name}: {r.message}")
+            print(f"  [OK] {r.field_name}: {r.message}")
     
     print(f"\n{'='*70}")
     if not failed:

@@ -20,13 +20,13 @@ Mathematical Definition:
     HeadUnitVec = normalized(shead - smid)
     VelocityVec = normalized displacement
     SpeedRun = ||displacement|| / dt
-    CosThetaFactor = VelocityVec · HeadUnitVec
-    SpeedRunVel = SpeedRun × CosThetaFactor
+    CosThetaFactor = VelocityVec . HeadUnitVec
+    SpeedRunVel = SpeedRun * CosThetaFactor
 
 Interpretation:
-    SpeedRunVel > 0  →  Forward movement (velocity aligned with head)
-    SpeedRunVel < 0  →  Reverse crawl (velocity opposite to head)
-    SpeedRunVel = 0  →  Stationary or perpendicular movement
+    SpeedRunVel > 0  ->  Forward movement (velocity aligned with head)
+    SpeedRunVel < 0  ->  Reverse crawl (velocity opposite to head)
+    SpeedRunVel = 0  ->  Stationary or perpendicular movement
 
 Documentation: scripts/2025-11-24/mason_scripts_documentation.qmd (Section 3)
 MATLAB equivalent: src/validation/reference/compute_speedrunvel.m
@@ -49,10 +49,10 @@ def compute_speedrunvel(
     """
     Compute SpeedRunVel (signed velocity indicating forward/reverse motion).
     
-    SpeedRunVel = SpeedRun × CosThetaFactor
+    SpeedRunVel = SpeedRun * CosThetaFactor
     
     where:
-        CosThetaFactor = VelocityVec · HeadUnitVec
+        CosThetaFactor = VelocityVec . HeadUnitVec
     
     Args:
         shead: Head positions, shape (2, N) or (N, 2)
@@ -87,7 +87,7 @@ def compute_speedrunvel(
     # Use head_unit_vec at each frame (truncate to match velocity length)
     cos_theta = np.sum(velocity_vec * head_unit_vec[:, :N], axis=0)
     
-    # SpeedRunVel = speed × cos(theta)
+    # SpeedRunVel = speed * cos(theta)
     speedrunvel = speed * cos_theta
     
     # Times correspond to the first point of each interval

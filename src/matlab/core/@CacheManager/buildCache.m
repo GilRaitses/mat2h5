@@ -88,7 +88,7 @@ function buildCache(obj, renderer, data, selected_tracks, progress_callback)
     elapsed_total = toc;
     obj.cache.render_time = elapsed_total;
     
-    fprintf('✓ Frame cache complete: %d frames in %.1f seconds (%.1f fps)\n', ...
+    fprintf('[OK] Frame cache complete: %d frames in %.1f seconds (%.1f fps)\n', ...
         rendered_count, elapsed_total, rendered_count/elapsed_total);
 end
 

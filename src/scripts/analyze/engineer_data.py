@@ -20,12 +20,12 @@ Mathematical Method (from Mason Klein's scripts):
 2. HeadUnitVec = HeadVec / ||HeadVec|| (normalized)
 3. VelocityVec = displacement / ||displacement|| (normalized)
 4. SpeedRun = ||displacement|| / dt (speed in cm/s)
-5. CosThetaFactor = VelocityVec · HeadUnitVec (dot product)
-6. SpeedRunVel = SpeedRun × CosThetaFactor (signed velocity)
+5. CosThetaFactor = VelocityVec . HeadUnitVec (dot product)
+6. SpeedRunVel = SpeedRun * CosThetaFactor (signed velocity)
 
 Reversal Detection:
-  - SpeedRunVel > 0 → Forward crawling
-  - SpeedRunVel < 0 → Reverse crawling
+  - SpeedRunVel > 0 -> Forward crawling
+  - SpeedRunVel < 0 -> Reverse crawling
   - Reversal event: SpeedRunVel < 0 for duration >= 3 seconds
 
 Reference: scripts/2025-11-24/mason_scripts_documentation.qmd
@@ -208,10 +208,10 @@ def compute_speedrunvel(
     """
     Compute SpeedRunVel (signed velocity indicating forward/reverse motion).
     
-    SpeedRunVel = SpeedRun × CosThetaFactor
+    SpeedRunVel = SpeedRun * CosThetaFactor
     
     where:
-        CosThetaFactor = VelocityVec · HeadUnitVec
+        CosThetaFactor = VelocityVec . HeadUnitVec
     
     Args:
         shead: Head positions, shape (2, N) or (N, 2)
@@ -239,7 +239,7 @@ def compute_speedrunvel(
     # Use head_unit_vec at each frame (truncate to match velocity length)
     cos_theta = np.sum(velocity_vec * head_unit_vec[:, :-1], axis=0)
     
-    # SpeedRunVel = speed × cos(theta)
+    # SpeedRunVel = speed * cos(theta)
     speedrunvel = speed * cos_theta
     
     # Times correspond to the first point of each interval

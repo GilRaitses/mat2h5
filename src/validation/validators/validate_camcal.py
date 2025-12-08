@@ -224,11 +224,11 @@ def print_results(results: List[ComparisonResult], verbose: bool = False):
     errors = [r for r in results if not r.match]
     
     if errors:
-        print(f"  ✗ {len(errors)} mismatches:")
+        print(f"  [FAIL] {len(errors)} mismatches:")
         for r in errors:
             print(f"      {r.message}")
     else:
-        print(f"  ✓ All {len(results)} fields match")
+        print(f"  [OK] All {len(results)} fields match")
         if verbose:
             for r in results:
                 print(f"      {r.message}")
@@ -370,7 +370,7 @@ def batch_validate(base_dir: Path) -> Dict:
         print("\nFailed files:")
         for f in results_summary['files']:
             if not f['passed']:
-                print(f"  ✗ {f['eset']}/{Path(f['h5']).name}")
+                print(f"  [FAIL] {f['eset']}/{Path(f['h5']).name}")
     
     print("=" * 70)
     

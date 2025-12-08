@@ -27,7 +27,7 @@ for eset_dir in sorted(BASE_DIR.iterdir()):
                 fields = list(f['camcalinfo'].keys())
                 has_tri = 'tri_points' in f['camcalinfo']
             
-            status = "✓" if (has_lpp and has_camcal and len(fields) >= 4) else "✗"
+            status = "[OK]" if (has_lpp and has_camcal and len(fields) >= 4) else "[FAIL]"
             tri_status = "TRI" if has_tri else "no-tri"
             print(f"  {status} {h5_file.name}: lpp={has_lpp}, fields={fields}, {tri_status}")
 
