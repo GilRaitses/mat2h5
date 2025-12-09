@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>magat fairy</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <style>
         * {
             margin: 0;
@@ -17,6 +18,7 @@
             overflow-x: hidden;
             overflow-y: auto;
             position: relative;
+            cursor: url('cursor.svg'), auto;
         }
 
         #fairy-background {
@@ -42,23 +44,7 @@
             pointer-events: none;
         }
 
-        #maggot-background {
-            position: fixed;
-            bottom: 6%;
-            left: 8%;
-            min-width: 320px;
-            min-height: 240px;
-            font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
-            font-size: 5px;
-            line-height: 1;
-            white-space: pre;
-            color: #000;
-            background: transparent;
-            opacity: 0.9;
-            z-index: 2;
-            pointer-events: none;
-            user-select: none;
-        }
+        /* #maggot-background removed */
 
         #content {
             position: relative;
@@ -443,7 +429,7 @@
 </head>
 <body>
     <div id="fairy-background"></div>
-    <div id="maggot-background"></div>
+    <!-- maggot-background removed -->
 
     <div id="content">
         <div id="title-container">
@@ -561,39 +547,7 @@
             }, 200); // Change frame every 200ms
         }
 
-        // Render maggot frames without rotating them
-        async function initMaggotBackground() {
-            const background = document.getElementById('maggot-background');
-            if (!background) {
-                console.error('maggot-background element not found');
-                return;
-            }
-
-            try {
-                const resp = await fetch('docs/assets/maggot-frame.js');
-                const rawText = await resp.text();
-
-                // Remove stray bracket lines and chunk evenly to preserve original orientation
-                const allLines = rawText.split(/\r?\n/).filter(line => line.trim() !== '[' && line.trim() !== ']');
-                const frameCount = 4;
-                const linesPerFrame = Math.floor(allLines.length / frameCount);
-
-                const frames = [];
-                for (let i = 0; i < frameCount; i++) {
-                    const frameLines = allLines.slice(i * linesPerFrame, (i + 1) * linesPerFrame);
-                    frames.push(frameLines.join('\n'));
-                }
-
-                let idx = 0;
-                background.textContent = frames[idx];
-                setInterval(() => {
-                    idx = (idx + 1) % frames.length;
-                    background.textContent = frames[idx];
-                }, 220);
-            } catch (err) {
-                console.error('Failed to load maggot frames', err);
-            }
-        }
+        // initMaggotBackground removed
 
         function initTitleLighting() {
             const container = document.getElementById('title-container');
@@ -696,7 +650,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initFairyBackground();
-            initMaggotBackground();
+            // initMaggotBackground removed
             initModalsCloseButtons();
             
             waitForThreeJS(() => {
