@@ -103,7 +103,7 @@ class ColoredProgress:
         
         # Calculate ETA
         elapsed = time.time() - self.start_time
-        if self.current > 0:
+        if self.current > 0 and elapsed > 0:
             rate = self.current / elapsed
             remaining = (self.total - self.current) / rate if rate > 0 else 0
             eta_str = f"ETA: {remaining:.0f}s"
