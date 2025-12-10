@@ -22,9 +22,9 @@ Reference for mapping MATLAB experiment fields to H5 paths.
 
 | MATLAB Path | H5 Path | Type | Shape | Units | Tolerance |
 |-------------|---------|------|-------|-------|-----------|
-| `track.dq.shead` | `/tracks/{key}/derived_quantities/shead` | float64 | (2, N) | pixels | 0 (exact) |
-| `track.dq.smid` | `/tracks/{key}/derived_quantities/smid` | float64 | (2, N) | pixels | 0 (exact) |
-| `track.dq.sloc` | `/tracks/{key}/derived_quantities/sloc` | float64 | (2, N) | pixels | 0 (exact) |
+| `track.dq.shead` | `/tracks/{key}/derived_quantities/shead` | float64 | (2, N) | cm | 0 (exact) |
+| `track.dq.smid` | `/tracks/{key}/derived_quantities/smid` | float64 | (2, N) | cm | 0 (exact) |
+| `track.dq.sloc` | `/tracks/{key}/derived_quantities/sloc` | float64 | (2, N) | cm | 0 (exact) |
 
 **⚠️ CRITICAL - Position Data Source:**
 - Use `derived_quantities/sloc` (SMOOTHED location) - matches MATLAB `getDerivedQuantity('sloc')`
@@ -36,6 +36,42 @@ Reference for mapping MATLAB experiment fields to H5 paths.
 - `smid`: Smoothed midpoint position [x; y]
 - `sloc` / `loc`: Smoothed centroid location [x; y]
 - Shape convention: MATLAB is (2, N), H5 may be (N, 2) - transpose if needed
+
+**UNIT CLARIFICATION (2025-12-10):**
+Position data (`shead`, `smid`, `sloc`) are exported in **centimeters**, not pixels.
+MATLAB's `getDerivedQuantity()` applies `lengthPerPixel` conversion internally.
+Empirical verification: sloc values range 6-16 (cm arena size), not 600-1600 (pixels).
+
+### Curvature Field Notes
+
+The `curv` field exported to H5 is **path curvature** (dtheta/ds):
+
+| Field | Units | Typical Range | Notes |
+|-------|-------|---------------|-------|
+| `curv` | 1/cm | -100,000 to +100,000 | Explodes when speed approaches zero |
+
+**WARNING (2025-12-10):** Do NOT use raw `curv` with threshold 0.4 for MAGAT segmentation.
+- The extreme values occur when `speed -> 0` (pauses)
+- Path curvature = d(theta)/ds = angular_velocity / speed
+- When speed approaches zero, curv approaches infinity
+- For run termination, use `sspineTheta` (body angle) instead
+- Or clip `curv` to a reasonable range (e.g., +/- 50)
+
+The MAGAT `curv_cut = 0.4` threshold is meant for **body curvature**, not path curvature.
+
+### Speed Thresholds for MAGAT Segmentation
+
+| MATLAB Parameter | MATLAB Value | MATLAB Units | H5 Equivalent |
+|------------------|--------------|--------------|---------------|
+| `stop_speed_cut` | 2.0 | mm/s | 0.2 cm/s |
+| `start_speed_cut` | 3.0 | mm/s | 0.3 cm/s |
+
+**UNIT CONVERSION (2025-12-10):**
+- MATLAB `MaggotSegmentOptions` uses **mm/s** for speed thresholds
+- H5 `speed` field is in **cm/s** (already converted from pixels)
+- Convert by dividing MATLAB thresholds by 10:
+  - 2.0 mm/s = 0.2 cm/s (stop threshold)
+  - 3.0 mm/s = 0.3 cm/s (start threshold)
 
 ### Calibration
 
