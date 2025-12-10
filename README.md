@@ -1,6 +1,6 @@
 # magatfairy: MATLAB to H5 made easy
 
-**Version 0.2.0** | Python 3.8+ | MATLAB R2020a+
+**Version 0.2.1** | Python 3.8+ | MATLAB R2020a+
 
 magatfairy converts MAGAT (Multi Animal Gate and Track Analyzer) experiments into clean H5 files for Python workflows. It ships the MATLAB bridge, conversion scripts, and validation tools so you can drag in data, run a single command, and get analysis-ready H5 outputs.
 
@@ -396,6 +396,11 @@ For issues or questions:
 - Check log files in `exports/` directory
 
 ## Changelog
+
+### v0.2.1 (2025-12-10)
+- Fixed `derivation_rules` export: MATLAB returns DerivationRules as matlab.object, not dict
+- Extract struct fields individually via `eng.eval()` for reliable cross-platform behavior
+- Use `require_group()` to prevent "group already exists" errors on fallback
 
 ### v0.2.0 (2025-12-10)
 - Added `derivation_rules` export (smoothTime, derivTime, interpTime) for INDYsim compatibility
